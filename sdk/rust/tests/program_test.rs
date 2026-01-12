@@ -1,4 +1,4 @@
-use allow_block_list_client::types::Mode;
+use token_acl_gate_client::types::Mode;
 use litesvm::types::TransactionResult;
 use litesvm::LiteSVM;
 use solana_instruction::{AccountMeta, Instruction};
@@ -45,7 +45,7 @@ impl TestContext {
         assert!(res.is_ok());
 
         let res = vm.add_program_from_file(
-            allow_block_list_client::programs::ABL_ID,
+            token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID,
             current_dir.join("tests/fixtures/allow_block_list.so"),
         );
         assert!(res.is_ok());
@@ -169,9 +169,9 @@ impl TestContext {
         let seed = Pubkey::new_unique();
 
         let (list_config_address, _) =
-            allow_block_list_client::accounts::ListConfig::find_pda(&self.auth.pubkey(), &seed);
+            token_acl_gate_client::accounts::ListConfig::find_pda(&self.auth.pubkey(), &seed);
 
-        let ix = allow_block_list_client::instructions::CreateListBuilder::new()
+        let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
             .authority(self.auth.pubkey())
             .list_config(list_config_address)
             .mode(mode)
@@ -195,10 +195,10 @@ impl TestContext {
 
         let extra_metas = token_acl_interface::get_thaw_extra_account_metas_address(
             &self.token.mint,
-            &allow_block_list_client::programs::ABL_ID,
+            &token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID,
         );
 
-        let ix = allow_block_list_client::instructions::SetupExtraMetasBuilder::new()
+        let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
             .authority(self.token.auth.pubkey())
             .mint(self.token.mint)
             .extra_metas(extra_metas)
@@ -227,9 +227,9 @@ impl TestContext {
 
     pub fn add_wallet_to_list(&mut self, list: &Pubkey, wallet_address: &Pubkey) -> Pubkey {
         let (wallet_entry, _) =
-            allow_block_list_client::accounts::WalletEntry::find_pda(&list, &wallet_address);
+            token_acl_gate_client::accounts::WalletEntry::find_pda(&list, &wallet_address);
 
-        let ix = allow_block_list_client::instructions::AddWalletBuilder::new()
+        let ix = token_acl_gate_client::instructions::AddWalletBuilder::new()
             .authority(self.auth.pubkey())
             .list_config(*list)
             .wallet(*wallet_address)
@@ -301,7 +301,7 @@ impl TestContext {
 
         let ix = token_acl_client::instructions::CreateConfigBuilder::new()
             .authority(self.token.auth.pubkey())
-            .gating_program(allow_block_list_client::programs::ABL_ID)
+            .gating_program(token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID)
             .mint(self.token.mint)
             .mint_config(mint_cfg_pk)
             .payer(self.token.auth.pubkey())
