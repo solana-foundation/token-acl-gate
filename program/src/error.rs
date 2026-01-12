@@ -3,7 +3,6 @@ use pinocchio::program_error::ProgramError;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ABLError {
     InvalidInstruction,
-
     InvalidAuthority,
     AccountBlocked,
     NotEnoughAccounts,

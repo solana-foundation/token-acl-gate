@@ -117,80 +117,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "allow-block-list"
-version = "0.1.0"
-dependencies = [
- "bytemuck",
- "pinocchio",
- "pinocchio-log",
- "pinocchio-pubkey",
- "pinocchio-system",
- "solana-curve25519",
- "spl-discriminator 0.4.1",
- "spl-tlv-account-resolution 0.10.0",
- "token-acl",
- "token-acl-interface",
-]
-
-[[package]]
-name = "allow-block-list-cli"
-version = "0.1.0"
-dependencies = [
- "allow-block-list-client",
- "clap 3.2.25",
- "futures-util",
- "solana-clap-v3-utils",
- "solana-cli-config",
- "solana-client",
- "solana-logger",
- "solana-remote-wallet",
- "solana-sdk",
- "spl-tlv-account-resolution 0.8.1",
- "spl-token-client",
- "spl-transfer-hook-interface 0.8.2",
- "token-acl-client",
- "token-acl-interface",
- "tokio",
-]
-
-[[package]]
-name = "allow-block-list-client"
-version = "0.1.0"
-dependencies = [
- "borsh 0.10.4",
- "kaigan",
- "litesvm",
- "num-derive",
- "num-traits",
- "solana-account-info",
- "solana-compute-budget-interface",
- "solana-cpi",
- "solana-decode-error",
- "solana-instruction",
- "solana-keypair",
- "solana-msg",
- "solana-program",
- "solana-program-entrypoint",
- "solana-program-error",
- "solana-program-runtime",
- "solana-pubkey",
- "solana-sdk",
- "solana-system-interface",
- "spl-associated-token-account-client",
- "spl-discriminator 0.4.1",
- "spl-pod 0.5.1",
- "spl-program-error 0.7.0",
- "spl-tlv-account-resolution 0.10.0",
- "spl-token-2022 9.0.0",
- "spl-type-length-value 0.8.0",
- "thiserror 2.0.12",
- "token-acl",
- "token-acl-client",
- "token-acl-interface",
- "tokio",
-]
-
-[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8363,6 +8289,80 @@ dependencies = [
  "spl-tlv-account-resolution 0.10.0",
  "spl-type-length-value 0.8.0",
  "thiserror 2.0.12",
+ "token-acl-interface",
+]
+
+[[package]]
+name = "token-acl-gate-cli"
+version = "0.1.0"
+dependencies = [
+ "clap 3.2.25",
+ "futures-util",
+ "solana-clap-v3-utils",
+ "solana-cli-config",
+ "solana-client",
+ "solana-logger",
+ "solana-remote-wallet",
+ "solana-sdk",
+ "spl-tlv-account-resolution 0.8.1",
+ "spl-token-client",
+ "spl-transfer-hook-interface 0.8.2",
+ "token-acl-client",
+ "token-acl-gate-client",
+ "token-acl-interface",
+ "tokio",
+]
+
+[[package]]
+name = "token-acl-gate-client"
+version = "0.1.0"
+dependencies = [
+ "borsh 0.10.4",
+ "kaigan",
+ "litesvm",
+ "num-derive",
+ "num-traits",
+ "solana-account-info",
+ "solana-compute-budget-interface",
+ "solana-cpi",
+ "solana-decode-error",
+ "solana-instruction",
+ "solana-keypair",
+ "solana-msg",
+ "solana-program",
+ "solana-program-entrypoint",
+ "solana-program-error",
+ "solana-program-runtime",
+ "solana-pubkey",
+ "solana-sdk",
+ "solana-system-interface",
+ "spl-associated-token-account-client",
+ "spl-discriminator 0.4.1",
+ "spl-pod 0.5.1",
+ "spl-program-error 0.7.0",
+ "spl-tlv-account-resolution 0.10.0",
+ "spl-token-2022 9.0.0",
+ "spl-type-length-value 0.8.0",
+ "thiserror 2.0.12",
+ "token-acl",
+ "token-acl-client",
+ "token-acl-interface",
+ "tokio",
+]
+
+[[package]]
+name = "token-acl-gate-program"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "pinocchio",
+ "pinocchio-log",
+ "pinocchio-pubkey",
+ "pinocchio-system",
+ "solana-curve25519",
+ "spl-discriminator 0.4.1",
+ "spl-tlv-account-resolution 0.10.0",
+ "token-acl",
  "token-acl-interface",
 ]
 

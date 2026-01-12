@@ -28,7 +28,7 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
-import { ABL_PROGRAM_ADDRESS } from '../programs';
+import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export const ADD_WALLET_DISCRIMINATOR = 2;
@@ -38,7 +38,7 @@ export function getAddWalletDiscriminatorBytes() {
 }
 
 export type AddWalletInstruction<
-  TProgram extends string = typeof ABL_PROGRAM_ADDRESS,
+  TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountAuthority extends string | AccountMeta<string> = string,
   TAccountListConfig extends string | AccountMeta<string> = string,
   TAccountWallet extends string | AccountMeta<string> = string,
@@ -116,7 +116,8 @@ export function getAddWalletInstruction<
   TAccountWallet extends string,
   TAccountWalletEntry extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof ABL_PROGRAM_ADDRESS,
+  TProgramAddress extends
+    Address = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
 >(
   input: AddWalletInput<
     TAccountAuthority,
@@ -135,7 +136,8 @@ export function getAddWalletInstruction<
   TAccountSystemProgram
 > {
   // Program address.
-  const programAddress = config?.programAddress ?? ABL_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -178,7 +180,7 @@ export function getAddWalletInstruction<
 }
 
 export type ParsedAddWalletInstruction<
-  TProgram extends string = typeof ABL_PROGRAM_ADDRESS,
+  TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;

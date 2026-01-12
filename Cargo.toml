@@ -4,7 +4,7 @@ resolver = "2"
 
 
 [workspace.dependencies]
-allow-block-list-client = { path = "sdk/rust"}
+token-acl-gate-client = { path = "sdk/rust"}
 solana-account-info = "2.2.1"
 solana-cpi = "2.2.1"
 solana-decode-error = "2.2.1"

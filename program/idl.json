@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "program": {
       "kind": "programNode",
-      "name": "abl",
+      "name": "token-acl-gate-program",
       "publicKey": "GATEzzqxhJnsWF6vHRsgtixxSB8PaQdcqGEVTEHWiULz",
       "version": "0.1.0",
       "origin": "shank",

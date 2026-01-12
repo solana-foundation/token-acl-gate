@@ -1,10 +1,10 @@
 [package]
-name = "allow-block-list-client"
+name = "token-acl-gate-client"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "allow_block_list_client"
+name = "token_acl_gate_client"
 
 [features]
 default = []

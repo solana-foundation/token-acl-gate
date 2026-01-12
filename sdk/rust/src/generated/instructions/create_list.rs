@@ -44,12 +44,12 @@ impl CreateList {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let mut data = borsh::to_vec(&CreateListInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&args).unwrap();
+        let mut data = CreateListInstructionData::new().try_to_vec().unwrap();
+        let mut args = args.try_to_vec().unwrap();
         data.append(&mut args);
 
         solana_instruction::Instruction {
-            program_id: crate::ABL_ID,
+            program_id: crate::TOKEN_ACL_GATE_PROGRAM_ID,
             accounts,
             data,
         }
@@ -66,6 +66,10 @@ impl CreateListInstructionData {
     pub fn new() -> Self {
         Self { discriminator: 1 }
     }
+
+    pub(crate) fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 impl Default for CreateListInstructionData {
@@ -79,6 +83,12 @@ impl Default for CreateListInstructionData {
 pub struct CreateListInstructionArgs {
     pub mode: Mode,
     pub seed: Pubkey,
+}
+
+impl CreateListInstructionArgs {
+    pub(crate) fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
+    }
 }
 
 /// Instruction builder for `CreateList`.
@@ -241,12 +251,12 @@ impl<'a, 'b> CreateListCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let mut data = borsh::to_vec(&CreateListInstructionData::new()).unwrap();
-        let mut args = borsh::to_vec(&self.__args).unwrap();
+        let mut data = CreateListInstructionData::new().try_to_vec().unwrap();
+        let mut args = self.__args.try_to_vec().unwrap();
         data.append(&mut args);
 
         let instruction = solana_instruction::Instruction {
-            program_id: crate::ABL_ID,
+            program_id: crate::TOKEN_ACL_GATE_PROGRAM_ID,
             accounts,
             data,
         };

@@ -27,7 +27,7 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
-import { ABL_PROGRAM_ADDRESS } from '../programs';
+import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export const REMOVE_WALLET_DISCRIMINATOR = 3;
@@ -37,7 +37,7 @@ export function getRemoveWalletDiscriminatorBytes() {
 }
 
 export type RemoveWalletInstruction<
-  TProgram extends string = typeof ABL_PROGRAM_ADDRESS,
+  TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountAuthority extends string | AccountMeta<string> = string,
   TAccountListConfig extends string | AccountMeta<string> = string,
   TAccountWalletEntry extends string | AccountMeta<string> = string,
@@ -99,7 +99,8 @@ export function getRemoveWalletInstruction<
   TAccountAuthority extends string,
   TAccountListConfig extends string,
   TAccountWalletEntry extends string,
-  TProgramAddress extends Address = typeof ABL_PROGRAM_ADDRESS,
+  TProgramAddress extends
+    Address = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
 >(
   input: RemoveWalletInput<
     TAccountAuthority,
@@ -114,7 +115,8 @@ export function getRemoveWalletInstruction<
   TAccountWalletEntry
 > {
   // Program address.
-  const programAddress = config?.programAddress ?? ABL_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -145,7 +147,7 @@ export function getRemoveWalletInstruction<
 }
 
 export type ParsedRemoveWalletInstruction<
-  TProgram extends string = typeof ABL_PROGRAM_ADDRESS,
+  TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
