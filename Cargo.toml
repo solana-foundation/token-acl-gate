@@ -31,8 +31,8 @@ spl-pod = "0.5.1"
 spl-token-2022 = { version = "9.0.0", features = ["no-entrypoint"] }
 solana-sdk = "2.3.1"
 spl-associated-token-account-client = "2.0.0"
-token-acl-interface = { git = "https://github.com/solana-foundation/token-acl", rev = "ff0c25f" }
-token-acl-client = { git = "https://github.com/solana-foundation/token-acl", rev = "ff0c25f" }
-token-acl = { git = "https://github.com/solana-foundation/token-acl", rev = "ff0c25f", features = [
+token-acl-interface = { git = "https://github.com/solana-foundation/token-acl", rev = "1f5c16f" }
+token-acl-client = { git = "https://github.com/solana-foundation/token-acl", rev = "1f5c16f" }
+token-acl = { git = "https://github.com/solana-foundation/token-acl", rev = "1f5c16f", features = [
     "no-entrypoint",
 ] }
