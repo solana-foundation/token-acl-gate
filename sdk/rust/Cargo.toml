@@ -1,7 +1,10 @@
 [package]
 name = "token-acl-gate-client"
 version = "0.1.0"
-edition = "2021"
+description = "A rust library for the Token ACL Gate program with generated client code."
+repository = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
 
 [lib]
 name = "token_acl_gate_client"

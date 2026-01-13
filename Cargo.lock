@@ -8589,7 +8589,7 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 [[package]]
 name = "token-acl"
 version = "0.1.0"
-source = "git+https://github.com/solana-foundation/token-acl?rev=1f5c16f#1f5c16fdfc259e5d5b23cab2e0e9adddd7036d84"
+source = "git+https://github.com/solana-foundation/token-acl#7f4238515c82aa8b0b43e590eb95d621ba406fd5"
 dependencies = [
  "arrayref",
  "bytemuck",
@@ -8612,7 +8612,7 @@ dependencies = [
 [[package]]
 name = "token-acl-client"
 version = "0.1.0"
-source = "git+https://github.com/solana-foundation/token-acl?rev=1f5c16f#1f5c16fdfc259e5d5b23cab2e0e9adddd7036d84"
+source = "git+https://github.com/solana-foundation/token-acl#7f4238515c82aa8b0b43e590eb95d621ba406fd5"
 dependencies = [
  "arrayref",
  "borsh 0.10.4",
@@ -8721,7 +8721,7 @@ dependencies = [
 [[package]]
 name = "token-acl-interface"
 version = "0.1.0"
-source = "git+https://github.com/solana-foundation/token-acl?rev=1f5c16f#1f5c16fdfc259e5d5b23cab2e0e9adddd7036d84"
+source = "git+https://github.com/solana-foundation/token-acl#7f4238515c82aa8b0b43e590eb95d621ba406fd5"
 dependencies = [
  "arrayref",
  "bytemuck",
