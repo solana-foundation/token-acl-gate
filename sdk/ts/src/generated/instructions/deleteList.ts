@@ -27,7 +27,7 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
-import { ABL_PROGRAM_ADDRESS } from '../programs';
+import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export const DELETE_LIST_DISCRIMINATOR = 5;
@@ -37,7 +37,7 @@ export function getDeleteListDiscriminatorBytes() {
 }
 
 export type DeleteListInstruction<
-  TProgram extends string = typeof ABL_PROGRAM_ADDRESS,
+  TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountAuthority extends string | AccountMeta<string> = string,
   TAccountListConfig extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
@@ -92,7 +92,8 @@ export type DeleteListInput<
 export function getDeleteListInstruction<
   TAccountAuthority extends string,
   TAccountListConfig extends string,
-  TProgramAddress extends Address = typeof ABL_PROGRAM_ADDRESS,
+  TProgramAddress extends
+    Address = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
 >(
   input: DeleteListInput<TAccountAuthority, TAccountListConfig>,
   config?: { programAddress?: TProgramAddress }
@@ -102,7 +103,8 @@ export function getDeleteListInstruction<
   TAccountListConfig
 > {
   // Program address.
-  const programAddress = config?.programAddress ?? ABL_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -130,7 +132,7 @@ export function getDeleteListInstruction<
 }
 
 export type ParsedDeleteListInstruction<
-  TProgram extends string = typeof ABL_PROGRAM_ADDRESS,
+  TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;

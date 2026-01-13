@@ -51,7 +51,7 @@ impl WalletEntry {
                 wallet_address.as_ref(),
                 &[bump],
             ],
-            &crate::ABL_ID,
+            &crate::TOKEN_ACL_GATE_PROGRAM_ID,
         )
     }
 
@@ -62,7 +62,7 @@ impl WalletEntry {
                 list_config.as_ref(),
                 wallet_address.as_ref(),
             ],
-            &crate::ABL_ID,
+            &crate::TOKEN_ACL_GATE_PROGRAM_ID,
         )
     }
 
@@ -165,7 +165,7 @@ impl anchor_lang::AccountSerialize for WalletEntry {}
 #[cfg(feature = "anchor")]
 impl anchor_lang::Owner for WalletEntry {
     fn owner() -> Pubkey {
-        crate::ABL_ID
+        crate::TOKEN_ACL_GATE_PROGRAM_ID
     }
 }
 

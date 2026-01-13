@@ -53,14 +53,14 @@ impl ListConfig {
                 seed.as_ref(),
                 &[bump],
             ],
-            &crate::ABL_ID,
+            &crate::TOKEN_ACL_GATE_PROGRAM_ID,
         )
     }
 
     pub fn find_pda(authority: &Pubkey, seed: &Pubkey) -> (solana_pubkey::Pubkey, u8) {
         solana_pubkey::Pubkey::find_program_address(
             &["list_config".as_bytes(), authority.as_ref(), seed.as_ref()],
-            &crate::ABL_ID,
+            &crate::TOKEN_ACL_GATE_PROGRAM_ID,
         )
     }
 
@@ -163,7 +163,7 @@ impl anchor_lang::AccountSerialize for ListConfig {}
 #[cfg(feature = "anchor")]
 impl anchor_lang::Owner for ListConfig {
     fn owner() -> Pubkey {
-        crate::ABL_ID
+        crate::TOKEN_ACL_GATE_PROGRAM_ID
     }
 }
 

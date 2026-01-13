@@ -2,24 +2,30 @@
 members = ["program", "cli", "sdk/rust"]
 resolver = "2"
 
+[workspace.package]
+repository = "https://github.com/solana-foundation/token-acl-gate"
+license = "MIT"
+edition = "2021"
 
 [workspace.dependencies]
-allow-block-list-client = { path = "sdk/rust"}
-solana-account-info = "2.2.1"
+token-acl-gate-client = { path = "sdk/rust"}
+solana-account-info = "2.3.0"
 solana-cpi = "2.2.1"
-solana-decode-error = "2.2.1"
-solana-instruction = { version = "=2.2.1", features = ["std"] }
-solana-program-error = "2.2.1"
-solana-pubkey = { version = "2.2.1", features = ["curve25519", "borsh"] }
-solana-keypair = "2.2.1"
-solana-program = "2.2.1"
+solana-decode-error = "2.3.0"
+solana-instruction = { version = "=2.3.3", features = ["std"] }
+solana-program-error = "2.2.2"
+solana-pubkey = { version = "2.3.0", features = ["curve25519", "borsh"] }
+solana-program-option = "2.2.1"
+solana-keypair = "2.2.3"
+solana-program = "2.3.0"
 solana-rent = "2.2.1"
 solana-system-interface = "1.0.0"
-solana-sysvar = "2.2.1"
+solana-sysvar = "2.3.0"
 solana-msg = "2.2.1"
-solana-program-test = "2.2.1"
-solana-program-entrypoint = "2.2.1"
-solana-program-runtime = "2.2.1"
+solana-client = "2.3.13"
+solana-program-test = "2.3.13"
+solana-program-entrypoint = "2.3.0"
+solana-program-runtime = "2.3.13"
 solana-program-pack = "2.2.1"
 spl-discriminator = "0.4.0"
 spl-program-error = "0.7.0"
@@ -27,10 +33,10 @@ spl-tlv-account-resolution = "0.10.0"
 spl-type-length-value = "0.8.0"
 spl-pod = "0.5.1"
 spl-token-2022 = { version = "9.0.0", features = ["no-entrypoint"] }
-solana-sdk = "2.2.1"
+solana-sdk = "2.3.1"
 spl-associated-token-account-client = "2.0.0"
-token-acl-interface = { git = "https://github.com/tiago18c/token-acl", rev = "6ab46bc" }
-token-acl-client = { git = "https://github.com/tiago18c/token-acl", rev = "6ab46bc" }
-token-acl = { git = "https://github.com/tiago18c/token-acl", rev = "6ab46bc", features = [
+token-acl-interface = { git = "https://github.com/solana-foundation/token-acl", version = "0.1.0" }
+token-acl-client = { git = "https://github.com/solana-foundation/token-acl", version = "0.1.0" }
+token-acl = { git = "https://github.com/solana-foundation/token-acl", version = "0.1.0", features = [
     "no-entrypoint",
 ] }

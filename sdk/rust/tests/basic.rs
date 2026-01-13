@@ -1,5 +1,5 @@
 pub mod program_test;
-use allow_block_list_client::{
+use token_acl_gate_client::{
     accounts::{ListConfig, WalletEntry},
     types::Mode,
 };
@@ -15,9 +15,9 @@ async fn creates_list() {
 
     let seed = Pubkey::new_unique();
     let (list_config_address, _) =
-        allow_block_list_client::accounts::ListConfig::find_pda(&context.auth.pubkey(), &seed);
+        token_acl_gate_client::accounts::ListConfig::find_pda(&context.auth.pubkey(), &seed);
 
-    let ix = allow_block_list_client::instructions::CreateListBuilder::new()
+    let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
         .authority(context.auth.pubkey())
         .list_config(list_config_address)
         .mode(Mode::Allow)
@@ -69,7 +69,7 @@ async fn deletes_list() {
 
     let list_config_address = context.create_list(Mode::Allow);
 
-    let ix = allow_block_list_client::instructions::DeleteListBuilder::new()
+    let ix = token_acl_gate_client::instructions::DeleteListBuilder::new()
         .authority(context.auth.pubkey())
         .list_config(list_config_address)
         .instruction();
@@ -84,10 +84,9 @@ async fn deletes_list() {
     let res = context.vm.send_transaction(tx);
     assert!(res.is_ok());
 
-    let list_config = context.vm.get_account(&list_config_address).unwrap();
+    let list_config = context.vm.get_account(&list_config_address);
 
-    assert_eq!(list_config.data.len(), 0);
-    assert_eq!(list_config.lamports, 0);
+    assert!(list_config.is_none());
 }
 
 #[tokio::test]
@@ -96,12 +95,12 @@ async fn adds_wallet() {
 
     let wallet_address = Pubkey::new_unique();
     let list_config_address = context.create_list(Mode::Allow);
-    let (wallet_entry, _) = allow_block_list_client::accounts::WalletEntry::find_pda(
+    let (wallet_entry, _) = token_acl_gate_client::accounts::WalletEntry::find_pda(
         &list_config_address,
         &wallet_address,
     );
 
-    let ix = allow_block_list_client::instructions::AddWalletBuilder::new()
+    let ix = token_acl_gate_client::instructions::AddWalletBuilder::new()
         .authority(context.auth.pubkey())
         .list_config(list_config_address)
         .wallet(wallet_address)
@@ -138,7 +137,7 @@ async fn removes_wallet() {
     let list_config_address = context.create_list(Mode::Allow);
     let wallet_entry = context.add_wallet_to_list(&list_config_address, &wallet_address);
 
-    let ix = allow_block_list_client::instructions::RemoveWalletBuilder::new()
+    let ix = token_acl_gate_client::instructions::RemoveWalletBuilder::new()
         .authority(context.auth.pubkey())
         .list_config(list_config_address)
         .wallet_entry(wallet_entry)
@@ -159,10 +158,9 @@ async fn removes_wallet() {
 
     assert_eq!(config.wallets_count, 0);
 
-    let wallet_entry = context.vm.get_account(&wallet_entry).unwrap();
+    let wallet_entry = context.vm.get_account(&wallet_entry);
 
-    assert_eq!(wallet_entry.data.len(), 0);
-    assert_eq!(wallet_entry.lamports, 0);
+    assert!(wallet_entry.is_none());
 }
 
 #[tokio::test]
@@ -175,10 +173,10 @@ async fn setup_list_extra_metas() {
 
     let extra_metas = token_acl_interface::get_thaw_extra_account_metas_address(
         &context.token.mint,
-        &allow_block_list_client::programs::ABL_ID,
+        &token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID,
     );
 
-    let ix = allow_block_list_client::instructions::SetupExtraMetasBuilder::new()
+    let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
         .authority(context.token.auth.pubkey())
         .mint(context.token.mint)
         .extra_metas(extra_metas)
@@ -198,7 +196,7 @@ async fn setup_list_extra_metas() {
 
     let wallet = solana_keypair::Keypair::new();
     let user_pubkey = wallet.pubkey();
-    let (wallet_entry, _) = allow_block_list_client::accounts::WalletEntry::find_pda(
+    let (wallet_entry, _) = token_acl_gate_client::accounts::WalletEntry::find_pda(
         &list_config_address,
         &wallet.pubkey(),
     );
@@ -230,7 +228,7 @@ async fn setup_list_extra_metas() {
     assert_eq!(rev_iter.next().unwrap().pubkey, wallet_entry);
     assert_eq!(rev_iter.next().unwrap().pubkey, list_config_address);
     assert_eq!(rev_iter.next().unwrap().pubkey, extra_metas);
-    assert!(rev_iter.any(|account| account.pubkey == allow_block_list_client::programs::ABL_ID));
+    assert!(rev_iter.any(|account| account.pubkey == token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID));
 }
 
 #[tokio::test]
@@ -245,10 +243,10 @@ async fn setup_list_extra_metas_with_multiple_lists() {
 
     let extra_metas = token_acl_interface::get_thaw_extra_account_metas_address(
         &context.token.mint,
-        &allow_block_list_client::programs::ABL_ID,
+        &token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID,
     );
 
-    let ix = allow_block_list_client::instructions::SetupExtraMetasBuilder::new()
+    let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
         .authority(context.token.auth.pubkey())
         .mint(context.token.mint)
         .extra_metas(extra_metas)
@@ -272,15 +270,15 @@ async fn setup_list_extra_metas_with_multiple_lists() {
 
     let wallet = solana_keypair::Keypair::new();
     let user_pubkey = wallet.pubkey();
-    let (wallet_entry, _) = allow_block_list_client::accounts::WalletEntry::find_pda(
+    let (wallet_entry, _) = token_acl_gate_client::accounts::WalletEntry::find_pda(
         &list_config_address,
         &wallet.pubkey(),
     );
-    let (wallet_entry2, _) = allow_block_list_client::accounts::WalletEntry::find_pda(
+    let (wallet_entry2, _) = token_acl_gate_client::accounts::WalletEntry::find_pda(
         &list_config_address_2,
         &wallet.pubkey(),
     );
-    let (wallet_entry3, _) = allow_block_list_client::accounts::WalletEntry::find_pda(
+    let (wallet_entry3, _) = token_acl_gate_client::accounts::WalletEntry::find_pda(
         &list_config_address_3,
         &wallet.pubkey(),
     );

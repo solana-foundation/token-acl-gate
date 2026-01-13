@@ -20,30 +20,30 @@ import {
   type ParsedSetupExtraMetasInstruction,
 } from '../instructions';
 
-export const ABL_PROGRAM_ADDRESS =
+export const TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS =
   'GATEzzqxhJnsWF6vHRsgtixxSB8PaQdcqGEVTEHWiULz' as Address<'GATEzzqxhJnsWF6vHRsgtixxSB8PaQdcqGEVTEHWiULz'>;
 
-export enum AblAccount {
+export enum TokenAclGateProgramAccount {
   ListConfig,
   WalletEntry,
 }
 
-export function identifyAblAccount(
+export function identifyTokenAclGateProgramAccount(
   account: { data: ReadonlyUint8Array } | ReadonlyUint8Array
-): AblAccount {
+): TokenAclGateProgramAccount {
   const data = 'data' in account ? account.data : account;
   if (containsBytes(data, getU8Encoder().encode(1), 0)) {
-    return AblAccount.ListConfig;
+    return TokenAclGateProgramAccount.ListConfig;
   }
   if (containsBytes(data, getU8Encoder().encode(2), 0)) {
-    return AblAccount.WalletEntry;
+    return TokenAclGateProgramAccount.WalletEntry;
   }
   throw new Error(
-    'The provided account could not be identified as a abl account.'
+    'The provided account could not be identified as a token-acl-gate-program account.'
   );
 }
 
-export enum AblInstruction {
+export enum TokenAclGateProgramInstruction {
   CreateList,
   AddWallet,
   RemoveWallet,
@@ -51,45 +51,45 @@ export enum AblInstruction {
   DeleteList,
 }
 
-export function identifyAblInstruction(
+export function identifyTokenAclGateProgramInstruction(
   instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
-): AblInstruction {
+): TokenAclGateProgramInstruction {
   const data = 'data' in instruction ? instruction.data : instruction;
   if (containsBytes(data, getU8Encoder().encode(1), 0)) {
-    return AblInstruction.CreateList;
+    return TokenAclGateProgramInstruction.CreateList;
   }
   if (containsBytes(data, getU8Encoder().encode(2), 0)) {
-    return AblInstruction.AddWallet;
+    return TokenAclGateProgramInstruction.AddWallet;
   }
   if (containsBytes(data, getU8Encoder().encode(3), 0)) {
-    return AblInstruction.RemoveWallet;
+    return TokenAclGateProgramInstruction.RemoveWallet;
   }
   if (containsBytes(data, getU8Encoder().encode(4), 0)) {
-    return AblInstruction.SetupExtraMetas;
+    return TokenAclGateProgramInstruction.SetupExtraMetas;
   }
   if (containsBytes(data, getU8Encoder().encode(5), 0)) {
-    return AblInstruction.DeleteList;
+    return TokenAclGateProgramInstruction.DeleteList;
   }
   throw new Error(
-    'The provided instruction could not be identified as a abl instruction.'
+    'The provided instruction could not be identified as a token-acl-gate-program instruction.'
   );
 }
 
-export type ParsedAblInstruction<
+export type ParsedTokenAclGateProgramInstruction<
   TProgram extends string = 'GATEzzqxhJnsWF6vHRsgtixxSB8PaQdcqGEVTEHWiULz',
 > =
   | ({
-      instructionType: AblInstruction.CreateList;
+      instructionType: TokenAclGateProgramInstruction.CreateList;
     } & ParsedCreateListInstruction<TProgram>)
   | ({
-      instructionType: AblInstruction.AddWallet;
+      instructionType: TokenAclGateProgramInstruction.AddWallet;
     } & ParsedAddWalletInstruction<TProgram>)
   | ({
-      instructionType: AblInstruction.RemoveWallet;
+      instructionType: TokenAclGateProgramInstruction.RemoveWallet;
     } & ParsedRemoveWalletInstruction<TProgram>)
   | ({
-      instructionType: AblInstruction.SetupExtraMetas;
+      instructionType: TokenAclGateProgramInstruction.SetupExtraMetas;
     } & ParsedSetupExtraMetasInstruction<TProgram>)
   | ({
-      instructionType: AblInstruction.DeleteList;
+      instructionType: TokenAclGateProgramInstruction.DeleteList;
     } & ParsedDeleteListInstruction<TProgram>);

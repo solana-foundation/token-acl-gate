@@ -37,9 +37,9 @@ async fn process_setup_extra_metas(
     let token_acl_mint_config = token_acl_client::accounts::MintConfig::find_pda(mint_address).0;
     let extra_metas = token_acl_interface::get_thaw_extra_account_metas_address(
         mint_address,
-        &allow_block_list_client::programs::ABL_ID,
+        &token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID,
     );
-    let ix = allow_block_list_client::instructions::SetupExtraMetasBuilder::new()
+    let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
         .authority(payer.pubkey())
         .token_acl_mint_config(token_acl_mint_config)
         .mint(*mint_address)
@@ -75,12 +75,12 @@ async fn process_setup_extra_metas(
 async fn process_create_list(
     rpc_client: &Arc<RpcClient>,
     payer: &Arc<dyn Signer>,
-    mode: allow_block_list_client::types::Mode,
+    mode: token_acl_gate_client::types::Mode,
 ) -> Result<Signature, Box<dyn Error>> {
     let seed = Keypair::new().pubkey();
     let list_config =
-        allow_block_list_client::accounts::ListConfig::find_pda(&payer.pubkey(), &seed).0;
-    let ix = allow_block_list_client::instructions::CreateListBuilder::new()
+    token_acl_gate_client::accounts::ListConfig::find_pda(&payer.pubkey(), &seed).0;
+    let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
         .authority(payer.pubkey())
         .seed(seed)
         .mode(mode)
@@ -114,7 +114,7 @@ async fn process_delete_list(
     payer: &Arc<dyn Signer>,
     list_address: &Pubkey,
 ) -> Result<Signature, Box<dyn Error>> {
-    let ix = allow_block_list_client::instructions::DeleteListBuilder::new()
+    let ix = token_acl_gate_client::instructions::DeleteListBuilder::new()
         .authority(payer.pubkey())
         .list_config(*list_address)
         .instruction();
@@ -144,12 +144,12 @@ async fn process_add_wallet(
     wallet_address: &Pubkey,
     list_address: &Pubkey,
 ) -> Result<Signature, Box<dyn Error>> {
-    let ix = allow_block_list_client::instructions::AddWalletBuilder::new()
+    let ix = token_acl_gate_client::instructions::AddWalletBuilder::new()
         .authority(payer.pubkey())
         .list_config(*list_address)
         .wallet(*wallet_address)
         .wallet_entry(
-            allow_block_list_client::accounts::WalletEntry::find_pda(list_address, wallet_address)
+            token_acl_gate_client::accounts::WalletEntry::find_pda(list_address, wallet_address)
                 .0,
         )
         .instruction();
@@ -179,11 +179,11 @@ async fn process_remove_wallet(
     wallet_address: &Pubkey,
     list_address: &Pubkey,
 ) -> Result<Signature, Box<dyn Error>> {
-    let ix = allow_block_list_client::instructions::RemoveWalletBuilder::new()
+    let ix = token_acl_gate_client::instructions::RemoveWalletBuilder::new()
         .authority(payer.pubkey())
         .list_config(*list_address)
         .wallet_entry(
-            allow_block_list_client::accounts::WalletEntry::find_pda(list_address, wallet_address)
+            token_acl_gate_client::accounts::WalletEntry::find_pda(list_address, wallet_address)
                 .0,
         )
         .instruction();
@@ -395,9 +395,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         ("create-list", arg_matches) => {
             let mode = arg_matches.get_one::<String>("mode").unwrap();
             let mode = match mode.as_str() {
-                "allow" => allow_block_list_client::types::Mode::Allow,
-                "allow-all-eoas" => allow_block_list_client::types::Mode::AllowAllEoas,
-                "block" => allow_block_list_client::types::Mode::Block,
+                "allow" => token_acl_gate_client::types::Mode::Allow,
+                "allow-all-eoas" => token_acl_gate_client::types::Mode::AllowAllEoas,
+                "block" => token_acl_gate_client::types::Mode::Block,
                 _ => unreachable!(),
             };
             let response = process_create_list(&rpc_client, &config.payer, mode)

@@ -41,10 +41,10 @@ impl RemoveWallet {
             false,
         ));
         accounts.extend_from_slice(remaining_accounts);
-        let data = borsh::to_vec(&RemoveWalletInstructionData::new()).unwrap();
+        let data = RemoveWalletInstructionData::new().try_to_vec().unwrap();
 
         solana_instruction::Instruction {
-            program_id: crate::ABL_ID,
+            program_id: crate::TOKEN_ACL_GATE_PROGRAM_ID,
             accounts,
             data,
         }
@@ -60,6 +60,10 @@ pub struct RemoveWalletInstructionData {
 impl RemoveWalletInstructionData {
     pub fn new() -> Self {
         Self { discriminator: 3 }
+    }
+
+    pub(crate) fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
+        borsh::to_vec(self)
     }
 }
 
@@ -206,10 +210,10 @@ impl<'a, 'b> RemoveWalletCpi<'a, 'b> {
                 is_writable: remaining_account.2,
             })
         });
-        let data = borsh::to_vec(&RemoveWalletInstructionData::new()).unwrap();
+        let data = RemoveWalletInstructionData::new().try_to_vec().unwrap();
 
         let instruction = solana_instruction::Instruction {
-            program_id: crate::ABL_ID,
+            program_id: crate::TOKEN_ACL_GATE_PROGRAM_ID,
             accounts,
             data,
         };

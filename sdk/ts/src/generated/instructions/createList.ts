@@ -30,7 +30,7 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
-import { ABL_PROGRAM_ADDRESS } from '../programs';
+import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 import {
   getModeDecoder,
@@ -46,7 +46,7 @@ export function getCreateListDiscriminatorBytes() {
 }
 
 export type CreateListInstruction<
-  TProgram extends string = typeof ABL_PROGRAM_ADDRESS,
+  TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountAuthority extends string | AccountMeta<string> = string,
   TAccountListConfig extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends
@@ -124,7 +124,8 @@ export function getCreateListInstruction<
   TAccountAuthority extends string,
   TAccountListConfig extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof ABL_PROGRAM_ADDRESS,
+  TProgramAddress extends
+    Address = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
 >(
   input: CreateListInput<
     TAccountAuthority,
@@ -139,7 +140,8 @@ export function getCreateListInstruction<
   TAccountSystemProgram
 > {
   // Program address.
-  const programAddress = config?.programAddress ?? ABL_PROGRAM_ADDRESS;
+  const programAddress =
+    config?.programAddress ?? TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -181,7 +183,7 @@ export function getCreateListInstruction<
 }
 
 export type ParsedCreateListInstruction<
-  TProgram extends string = typeof ABL_PROGRAM_ADDRESS,
+  TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;

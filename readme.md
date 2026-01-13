@@ -79,11 +79,18 @@ This program serves as a gate program for the [Token ACL system](https://github.
 
 ### Building
 ```bash
+# Clone the repository
+git clone https://github.com/solana-foundation/token-acl-gate.git
+cd token-acl-gate
+
 # Build the program
 cargo build-sbf --manifest-path=program/Cargo.toml
 
 # Build CLI
 cargo build --manifest-path=cli/Cargo.toml
+
+# Install CLI
+cargo install --path cli
 
 # Generate SDKs
 pnpm run generate-sdks
@@ -96,6 +103,70 @@ cargo test-sbf --manifest-path=sdk/rust/Cargo.toml
 ```
 GATEzzqxhJnsWF6vHRsgtixxSB8PaQdcqGEVTEHWiULz
 ```
+
+### CLI Basic Usage
+
+The CLI provides commands to manage allow/block lists and configure them for token mints.
+
+#### Global Options
+
+- `-C, --config <PATH>` - Configuration file to use
+- `-k, --payer <KEYPAIR>` - Filepath or URL to a keypair [default: client keypair]
+- `-v, --verbose` - Show additional information
+- `-u, --url <URL>` - JSON RPC URL for the cluster [default: value from configuration file]
+
+#### Commands
+
+**Create a new list:**
+```bash
+# Create an allow list
+cargo run --bin token-acl-gate-cli -- create-list --mode allow
+
+# Create a block list
+cargo run --bin token-acl-gate-cli -- create-list --mode block
+
+# Create an allow-all-eoas list
+cargo run --bin token-acl-gate-cli -- create-list --mode allow-all-eoas
+```
+
+**Delete a list:**
+```bash
+cargo run --bin token-acl-gate-cli -- delete-list <LIST_ADDRESS>
+```
+
+**Add a wallet to a list:**
+```bash
+cargo run --bin token-acl-gate-cli -- add-wallet <LIST_ADDRESS> <WALLET_ADDRESS>
+```
+
+**Remove a wallet from a list:**
+```bash
+cargo run --bin token-acl-gate-cli -- remove-wallet <LIST_ADDRESS> <WALLET_ADDRESS>
+```
+
+**Apply lists to a mint:**
+```bash
+# Apply a single list to a mint
+cargo run --bin token-acl-gate-cli -- apply-lists-to-mint <MINT_ADDRESS> <LIST_ADDRESS>
+
+# Apply multiple lists to a mint
+cargo run --bin token-acl-gate-cli -- apply-lists-to-mint <MINT_ADDRESS> <LIST_ADDRESS_1> <LIST_ADDRESS_2> <LIST_ADDRESS_3>
+```
+
+**Example workflow:**
+```bash
+# 1. Create an allow list
+cargo run --bin token-acl-gate-cli -- create-list --mode allow
+# Output: list_config: <LIST_ADDRESS>, seed: <SEED>
+
+# 2. Add wallets to the list
+cargo run --bin token-acl-gate-cli -- add-wallet <LIST_ADDRESS> <WALLET_ADDRESS_1>
+cargo run --bin token-acl-gate-cli -- add-wallet <LIST_ADDRESS> <WALLET_ADDRESS_2>
+
+# 3. Configure the list for a token mint
+cargo run --bin token-acl-gate-cli -- apply-lists-to-mint <MINT_ADDRESS> <LIST_ADDRESS>
+```
+
 
 ## References
 

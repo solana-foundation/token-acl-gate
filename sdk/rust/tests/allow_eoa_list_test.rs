@@ -1,5 +1,5 @@
 pub mod program_test;
-use allow_block_list_client::types::Mode;
+use token_acl_gate_client::types::Mode;
 use solana_keypair::Keypair;
 use solana_sdk::{
     program_option::COption, program_pack::Pack, signer::Signer, transaction::Transaction,
