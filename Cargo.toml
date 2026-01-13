@@ -8,7 +8,7 @@ license = "MIT"
 edition = "2021"
 
 [workspace.dependencies]
-token-acl-gate-client = { path = "sdk/rust"}
+token-acl-gate-client = { path = "sdk/rust", version = "0.1.0" }
 solana-account-info = "2.3.0"
 solana-cpi = "2.2.1"
 solana-decode-error = "2.3.0"
