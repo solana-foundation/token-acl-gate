@@ -22,10 +22,6 @@ impl ListConfig {
         }
     }
 
-    pub fn set_mode(&mut self, mode: Mode) {
-        self.mode = mode as u8;
-    }
-
     pub fn get_wallets_count(&self) -> u64 {
         u64::from_le_bytes(self.wallets_count)
     }
