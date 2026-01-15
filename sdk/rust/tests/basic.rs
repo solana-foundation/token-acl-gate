@@ -1,12 +1,16 @@
 pub mod program_test;
+use solana_instruction::AccountMeta;
 use solana_keypair::Keypair;
+use solana_pubkey::Pubkey;
+use solana_sdk::{
+    instruction::InstructionError,
+    signer::Signer,
+    transaction::{Transaction, TransactionError},
+};
 use token_acl_gate_client::{
     accounts::{ListConfig, WalletEntry},
     types::Mode,
 };
-use solana_instruction::AccountMeta;
-use solana_pubkey::Pubkey;
-use solana_sdk::{instruction::InstructionError, signer::Signer, transaction::{Transaction, TransactionError}};
 
 use crate::program_test::TestContext;
 
@@ -106,7 +110,10 @@ async fn fails_to_delete_list_with_invalid_authority() {
     let tx = Transaction::new_signed_with_payer(
         &[ix],
         Some(&context.auth.pubkey()),
-        &[context.auth.insecure_clone(), invalid_authority.insecure_clone()],
+        &[
+            context.auth.insecure_clone(),
+            invalid_authority.insecure_clone(),
+        ],
         context.vm.latest_blockhash(),
     );
 
@@ -115,7 +122,10 @@ async fn fails_to_delete_list_with_invalid_authority() {
     assert!(res.is_err());
 
     let err = res.err().unwrap();
-    assert_eq!(err.err, TransactionError::InstructionError(0, InstructionError::Custom(1)));
+    assert_eq!(
+        err.err,
+        TransactionError::InstructionError(0, InstructionError::Custom(1))
+    );
 }
 
 #[tokio::test]
@@ -207,6 +217,7 @@ async fn setup_list_extra_metas() {
 
     let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
         .authority(context.token.auth.pubkey())
+        .payer(context.token.auth.pubkey())
         .mint(context.token.mint)
         .extra_metas(extra_metas)
         .token_acl_mint_config(mint_config)
@@ -257,7 +268,9 @@ async fn setup_list_extra_metas() {
     assert_eq!(rev_iter.next().unwrap().pubkey, wallet_entry);
     assert_eq!(rev_iter.next().unwrap().pubkey, list_config_address);
     assert_eq!(rev_iter.next().unwrap().pubkey, extra_metas);
-    assert!(rev_iter.any(|account| account.pubkey == token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID));
+    assert!(rev_iter.any(
+        |account| account.pubkey == token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID
+    ));
 }
 
 #[tokio::test]
@@ -277,6 +290,7 @@ async fn setup_list_extra_metas_with_multiple_lists() {
 
     let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
         .authority(context.token.auth.pubkey())
+        .payer(context.token.auth.pubkey())
         .mint(context.token.mint)
         .extra_metas(extra_metas)
         .token_acl_mint_config(mint_config)
@@ -380,7 +394,6 @@ async fn setup_list_extra_metas_multiple_times() {
     let _res = context.setup_extra_metas(&[]);
 }
 
-
 #[tokio::test]
 async fn fails_to_setup_list_extra_metas_with_invalid_gating_program() {
     let mut context = TestContext::new();
@@ -407,6 +420,7 @@ async fn fails_to_setup_list_extra_metas_with_invalid_gating_program() {
 
     let ix2 = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
         .authority(context.token.auth.pubkey())
+        .payer(context.token.auth.pubkey())
         .mint(context.token.mint)
         .extra_metas(extra_metas)
         .token_acl_mint_config(mint_cfg_pk)
@@ -425,5 +439,8 @@ async fn fails_to_setup_list_extra_metas_with_invalid_gating_program() {
     assert!(res.is_err());
 
     let err = res.err().unwrap();
-    assert_eq!(err.err, TransactionError::InstructionError(1, InstructionError::Custom(6)));
+    assert_eq!(
+        err.err,
+        TransactionError::InstructionError(1, InstructionError::Custom(6))
+    );
 }

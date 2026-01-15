@@ -10,6 +10,7 @@ use crate::{load, ABLError, ListConfig, WalletEntry};
 
 pub struct SetupExtraMetas<'a> {
     pub authority: &'a AccountInfo,
+    pub payer: &'a AccountInfo,
     pub token_acl_mint_config: &'a AccountInfo,
     pub mint: &'a AccountInfo,
     pub extra_metas: &'a AccountInfo,
@@ -22,7 +23,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for SetupExtraMetas<'a> {
     type Error = ABLError;
 
     fn try_from(accounts: &'a [AccountInfo]) -> Result<Self, Self::Error> {
-        let [authority, token_acl_mint_config, mint, extra_metas, system_program, remaining_accounts @ ..] =
+        let [authority, payer, token_acl_mint_config, mint, extra_metas, system_program, remaining_accounts @ ..] =
             accounts
         else {
             return Err(ABLError::NotEnoughAccounts);
@@ -50,6 +51,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for SetupExtraMetas<'a> {
 
         Ok(Self {
             authority,
+            payer,
             token_acl_mint_config,
             mint,
             extra_metas,
@@ -101,7 +103,7 @@ impl<'a> SetupExtraMetas<'a> {
         
         if self.extra_metas.is_owned_by(&crate::ID) {
             let current_lamports = self.extra_metas.lamports();
-            let auth_lamports = self.authority.lamports();
+            let payer_lamports = self.payer.lamports();
             
             // just resize and set everything to 0
             self.extra_metas.resize(data_len)?;
@@ -117,7 +119,7 @@ impl<'a> SetupExtraMetas<'a> {
                 // transfer to extra
                 let diff = min_lamports - current_lamports;
                 pinocchio_system::instructions::Transfer {
-                    from: self.authority,
+                    from: self.payer,
                     to: self.extra_metas,
                     lamports: diff,
                 }
@@ -127,8 +129,8 @@ impl<'a> SetupExtraMetas<'a> {
                 let diff = current_lamports - min_lamports;
                 unsafe {
                     *self.extra_metas.borrow_mut_lamports_unchecked() = min_lamports;
-                    *self.authority.borrow_mut_lamports_unchecked() =
-                    auth_lamports.checked_add(diff).unwrap();
+                    *self.payer.borrow_mut_lamports_unchecked() =
+                    payer_lamports.checked_add(diff).unwrap();
                 }
             }
         } else {
@@ -142,7 +144,7 @@ impl<'a> SetupExtraMetas<'a> {
             let signer = Signer::from(&seeds);
             
             pinocchio_system::instructions::CreateAccount {
-                from: self.authority,
+                from: self.payer,
                 to: self.extra_metas,
                 lamports: min_lamports,
                 space: data_len as u64,

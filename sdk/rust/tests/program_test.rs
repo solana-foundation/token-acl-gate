@@ -1,4 +1,3 @@
-use token_acl_gate_client::types::Mode;
 use litesvm::types::TransactionResult;
 use litesvm::LiteSVM;
 use solana_instruction::{AccountMeta, Instruction};
@@ -13,6 +12,7 @@ use spl_token_2022::extension::default_account_state::instruction::initialize_de
 use spl_token_2022::extension::ExtensionType;
 use spl_token_2022::instruction::initialize_mint2;
 use spl_token_2022::state::{AccountState, Mint};
+use token_acl_gate_client::types::Mode;
 
 pub struct TestContext {
     pub vm: LiteSVM,
@@ -60,7 +60,7 @@ impl TestContext {
         Self { vm, token, auth }
     }
 
-    fn create_token(vm: &mut LiteSVM) -> TokenContext {
+    pub fn create_token(vm: &mut LiteSVM) -> TokenContext {
         let auth = Keypair::new();
         let auth_pubkey = auth.pubkey();
 
@@ -200,6 +200,7 @@ impl TestContext {
 
         let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
             .authority(self.token.auth.pubkey())
+            .payer(self.token.auth.pubkey())
             .mint(self.token.mint)
             .extra_metas(extra_metas)
             .token_acl_mint_config(mint_cfg_pk)

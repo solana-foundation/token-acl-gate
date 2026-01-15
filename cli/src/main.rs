@@ -41,6 +41,7 @@ async fn process_setup_extra_metas(
     );
     let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
         .authority(payer.pubkey())
+        .payer(payer.pubkey())
         .token_acl_mint_config(token_acl_mint_config)
         .mint(*mint_address)
         .extra_metas(extra_metas)

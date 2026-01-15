@@ -361,6 +361,14 @@
                 },
                 {
                     "kind": "instructionAccountNode",
+                    "name": "payer",
+                    "docs": [],
+                    "isWritable": true,
+                    "isSigner": true,
+                    "isOptional": false
+                },
+                {
+                    "kind": "instructionAccountNode",
                     "name": "tokenAclMintConfig",
                     "docs": [],
                     "isWritable": false,
