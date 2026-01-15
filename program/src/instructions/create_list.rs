@@ -28,6 +28,10 @@ impl<'a> TryFrom<&'a [AccountInfo]> for CreateList<'a> {
             return Err(ABLError::InvalidSystemProgram);
         }
 
+        if !authority.is_signer() {
+            return Err(ABLError::InvalidAuthority.into());
+        }
+
         Ok(Self {
             authority,
             list_config,
