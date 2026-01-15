@@ -74,6 +74,10 @@ impl<'a> SetupExtraMetas<'a> {
         {
             return Err(ABLError::InvalidAuthority.into());
         }
+
+        if mint_config.gating_program.as_array() != &crate::ID {
+            return Err(ABLError::InvalidGatingProgram.into());
+        }
         
         if self.remaining_accounts.len() > 5 {
             return Err(ABLError::InvalidData.into());

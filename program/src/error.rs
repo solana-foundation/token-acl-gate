@@ -8,6 +8,7 @@ pub enum ABLError {
     NotEnoughAccounts,
     InvalidAccountData,
     InvalidSystemProgram,
+    InvalidGatingProgram,
     InvalidConfigAccount,
     AccountNotWritable,
     InvalidExtraMetasAccount,

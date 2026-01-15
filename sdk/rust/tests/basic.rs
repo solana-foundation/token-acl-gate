@@ -379,3 +379,51 @@ async fn setup_list_extra_metas_multiple_times() {
     let _res = context.setup_extra_metas(&[list_config_address, list_config_address_2]);
     let _res = context.setup_extra_metas(&[]);
 }
+
+
+#[tokio::test]
+async fn fails_to_setup_list_extra_metas_with_invalid_gating_program() {
+    let mut context = TestContext::new();
+
+    let (mint_cfg_pk, _) = token_acl_client::accounts::MintConfig::find_pda(&context.token.mint);
+
+    let ix1 = token_acl_client::instructions::CreateConfigBuilder::new()
+        .authority(context.token.auth.pubkey())
+        // random invalid program id
+        .gating_program(spl_token_2022::ID)
+        .mint(context.token.mint)
+        .mint_config(mint_cfg_pk)
+        .payer(context.token.auth.pubkey())
+        .system_program(solana_system_interface::program::ID)
+        .token_program(spl_token_2022::ID)
+        .instruction();
+
+    let list_config_address = context.create_list(Mode::Allow);
+
+    let extra_metas = token_acl_interface::get_thaw_extra_account_metas_address(
+        &context.token.mint,
+        &token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID,
+    );
+
+    let ix2 = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
+        .authority(context.token.auth.pubkey())
+        .mint(context.token.mint)
+        .extra_metas(extra_metas)
+        .token_acl_mint_config(mint_cfg_pk)
+        .add_remaining_account(AccountMeta::new_readonly(list_config_address, false))
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix1, ix2],
+        Some(&context.token.auth.pubkey()),
+        &[context.token.auth.insecure_clone()],
+        context.vm.latest_blockhash(),
+    );
+
+    let res = context.vm.send_transaction(tx);
+    println!("res: {:?}", res);
+    assert!(res.is_err());
+
+    let err = res.err().unwrap();
+    assert_eq!(err.err, TransactionError::InstructionError(1, InstructionError::Custom(6)));
+}
