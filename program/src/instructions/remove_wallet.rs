@@ -26,12 +26,10 @@ impl<'a> RemoveWallet<'a> {
             *self.authority.borrow_mut_lamports_unchecked() = destination_lamports
                 .checked_add(self.wallet_entry.lamports())
                 .ok_or(ProgramError::ArithmeticOverflow)?;
-            self.wallet_entry.close_unchecked();
         }
+        self.wallet_entry.close()?;
 
         list_config.decrement_wallets_count()?;
-
-        self.wallet_entry.resize(0)?;
 
         Ok(())
     }

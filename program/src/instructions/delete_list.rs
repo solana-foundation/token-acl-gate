@@ -51,9 +51,9 @@ impl<'a> DeleteList<'a> {
         let authority_lamports = unsafe { self.authority.borrow_mut_lamports_unchecked() };
 
         *authority_lamports += *list_config_lamports;
-        *list_config_lamports = 0;
-
-        self.list_config.resize(0)?;
+        
+        // close will set lamports to 0
+        self.list_config.close()?;
 
         Ok(())
     }
