@@ -69,8 +69,8 @@ impl<'a> SetupExtraMetas<'a> {
         .map_err(|_| ABLError::InvalidTokenAclMintConfig)?;
     
         // only the selected freeze authority should be able to set the extra metas
-        if mint_config.mint.as_array() == self.mint.key()
-        && mint_config.freeze_authority.as_array() != self.authority.key()
+        if mint_config.mint.as_array() != self.mint.key()
+        || mint_config.freeze_authority.as_array() != self.authority.key()
         {
             return Err(ABLError::InvalidAuthority.into());
         }
