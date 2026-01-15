@@ -19,6 +19,10 @@ impl<'a> TryFrom<&'a [AccountInfo]> for DeleteList<'a> {
             return Err(ABLError::InvalidConfigAccount);
         }
 
+        if !authority.is_signer() {
+            return Err(ABLError::InvalidAuthority.into());
+        }
+
         Ok(Self {
             authority,
             list_config,
@@ -33,6 +37,10 @@ impl<'a> DeleteList<'a> {
         {
             let list_config =
                 unsafe { load::<ListConfig>(self.list_config.borrow_data_unchecked())? };
+
+            if list_config.authority.ne(self.authority.key()) {
+                return Err(ABLError::InvalidAuthority.into());
+            }
 
             if list_config.get_wallets_count() > 0 {
                 return Err(ABLError::ListNotEmpty.into());

@@ -46,7 +46,7 @@ impl TestContext {
 
         let res = vm.add_program_from_file(
             token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID,
-            current_dir.join("tests/fixtures/allow_block_list.so"),
+            current_dir.join("tests/fixtures/token_acl_gate_program.so"),
         );
         assert!(res.is_ok());
 

@@ -1,11 +1,12 @@
 pub mod program_test;
+use solana_keypair::Keypair;
 use token_acl_gate_client::{
     accounts::{ListConfig, WalletEntry},
     types::Mode,
 };
 use solana_instruction::AccountMeta;
 use solana_pubkey::Pubkey;
-use solana_sdk::{signer::Signer, transaction::Transaction};
+use solana_sdk::{instruction::InstructionError, signer::Signer, transaction::{Transaction, TransactionError}};
 
 use crate::program_test::TestContext;
 
@@ -87,6 +88,34 @@ async fn deletes_list() {
     let list_config = context.vm.get_account(&list_config_address);
 
     assert!(list_config.is_none());
+}
+
+#[tokio::test]
+async fn fails_to_delete_list_with_invalid_authority() {
+    let mut context = TestContext::new();
+
+    let list_config_address = context.create_list(Mode::Allow);
+    let invalid_authority = Keypair::new();
+    let invalid_authority_pubkey = invalid_authority.pubkey();
+
+    let ix = token_acl_gate_client::instructions::DeleteListBuilder::new()
+        .authority(invalid_authority_pubkey)
+        .list_config(list_config_address)
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.auth.pubkey()),
+        &[context.auth.insecure_clone(), invalid_authority.insecure_clone()],
+        context.vm.latest_blockhash(),
+    );
+
+    let res = context.vm.send_transaction(tx);
+    println!("res: {:?}", res);
+    assert!(res.is_err());
+
+    let err = res.err().unwrap();
+    assert_eq!(err.err, TransactionError::InstructionError(0, InstructionError::Custom(1)));
 }
 
 #[tokio::test]
