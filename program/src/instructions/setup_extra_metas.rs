@@ -44,6 +44,10 @@ impl<'a> TryFrom<&'a [AccountInfo]> for SetupExtraMetas<'a> {
             return Err(ABLError::InvalidExtraMetasAccount);
         }
 
+        if !token_acl_mint_config.is_owned_by(token_acl_client::programs::TOKEN_ACL_ID.as_array()) {
+            return Err(ABLError::InvalidConfigAccount);
+        }
+
         // check if system program is valid
         if system_program.key().ne(&pinocchio_system::ID) {
             return Err(ABLError::InvalidSystemProgram);
