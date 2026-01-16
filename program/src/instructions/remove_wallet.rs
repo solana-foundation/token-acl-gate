@@ -51,6 +51,10 @@ impl<'a> TryFrom<&'a [AccountInfo]> for RemoveWallet<'a> {
             return Err(ABLError::AccountNotWritable);
         }
 
+        if !wallet_entry.is_owned_by(&crate::ID) {
+            return Err(ABLError::InvalidWalletEntry);
+        }
+
         let we = unsafe { load::<WalletEntry>(wallet_entry.borrow_data_unchecked())? };
         if !we.list_config.eq(list_config.key()) {
             return Err(ABLError::InvalidWalletEntry);
