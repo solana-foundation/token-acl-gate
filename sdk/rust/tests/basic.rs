@@ -24,6 +24,7 @@ async fn creates_list() {
 
     let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
         .authority(context.auth.pubkey())
+        .payer(context.auth.pubkey())
         .list_config(list_config_address)
         .mode(Mode::Allow)
         .seed(seed)
@@ -141,6 +142,7 @@ async fn adds_wallet() {
 
     let ix = token_acl_gate_client::instructions::AddWalletBuilder::new()
         .authority(context.auth.pubkey())
+        .payer(context.auth.pubkey())
         .list_config(list_config_address)
         .wallet(wallet_address)
         .wallet_entry(wallet_entry)

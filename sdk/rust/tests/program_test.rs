@@ -173,6 +173,7 @@ impl TestContext {
 
         let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
             .authority(self.auth.pubkey())
+            .payer(self.auth.pubkey())
             .list_config(list_config_address)
             .mode(mode)
             .seed(seed)
@@ -232,6 +233,7 @@ impl TestContext {
 
         let ix = token_acl_gate_client::instructions::AddWalletBuilder::new()
             .authority(self.auth.pubkey())
+            .payer(self.auth.pubkey())
             .list_config(*list)
             .wallet(*wallet_address)
             .wallet_entry(wallet_entry)

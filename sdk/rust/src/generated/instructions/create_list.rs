@@ -17,6 +17,8 @@ pub const CREATE_LIST_DISCRIMINATOR: u8 = 1;
 pub struct CreateList {
     pub authority: solana_pubkey::Pubkey,
 
+    pub payer: solana_pubkey::Pubkey,
+
     pub list_config: solana_pubkey::Pubkey,
 
     pub system_program: solana_pubkey::Pubkey,
@@ -33,8 +35,12 @@ impl CreateList {
         args: CreateListInstructionArgs,
         remaining_accounts: &[solana_instruction::AccountMeta],
     ) -> solana_instruction::Instruction {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
-        accounts.push(solana_instruction::AccountMeta::new(self.authority, true));
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
+            self.authority,
+            true,
+        ));
+        accounts.push(solana_instruction::AccountMeta::new(self.payer, true));
         accounts.push(solana_instruction::AccountMeta::new(
             self.list_config,
             false,
@@ -95,12 +101,14 @@ impl CreateListInstructionArgs {
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, signer]` authority
-///   1. `[writable]` list_config
-///   2. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   0. `[signer]` authority
+///   1. `[writable, signer]` payer
+///   2. `[writable]` list_config
+///   3. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct CreateListBuilder {
     authority: Option<solana_pubkey::Pubkey>,
+    payer: Option<solana_pubkey::Pubkey>,
     list_config: Option<solana_pubkey::Pubkey>,
     system_program: Option<solana_pubkey::Pubkey>,
     mode: Option<Mode>,
@@ -115,6 +123,11 @@ impl CreateListBuilder {
     #[inline(always)]
     pub fn authority(&mut self, authority: solana_pubkey::Pubkey) -> &mut Self {
         self.authority = Some(authority);
+        self
+    }
+    #[inline(always)]
+    pub fn payer(&mut self, payer: solana_pubkey::Pubkey) -> &mut Self {
+        self.payer = Some(payer);
         self
     }
     #[inline(always)]
@@ -157,6 +170,7 @@ impl CreateListBuilder {
     pub fn instruction(&self) -> solana_instruction::Instruction {
         let accounts = CreateList {
             authority: self.authority.expect("authority is not set"),
+            payer: self.payer.expect("payer is not set"),
             list_config: self.list_config.expect("list_config is not set"),
             system_program: self
                 .system_program
@@ -175,6 +189,8 @@ impl CreateListBuilder {
 pub struct CreateListCpiAccounts<'a, 'b> {
     pub authority: &'b solana_account_info::AccountInfo<'a>,
 
+    pub payer: &'b solana_account_info::AccountInfo<'a>,
+
     pub list_config: &'b solana_account_info::AccountInfo<'a>,
 
     pub system_program: &'b solana_account_info::AccountInfo<'a>,
@@ -186,6 +202,8 @@ pub struct CreateListCpi<'a, 'b> {
     pub __program: &'b solana_account_info::AccountInfo<'a>,
 
     pub authority: &'b solana_account_info::AccountInfo<'a>,
+
+    pub payer: &'b solana_account_info::AccountInfo<'a>,
 
     pub list_config: &'b solana_account_info::AccountInfo<'a>,
 
@@ -203,6 +221,7 @@ impl<'a, 'b> CreateListCpi<'a, 'b> {
         Self {
             __program: program,
             authority: accounts.authority,
+            payer: accounts.payer,
             list_config: accounts.list_config,
             system_program: accounts.system_program,
             __args: args,
@@ -231,11 +250,12 @@ impl<'a, 'b> CreateListCpi<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
         remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program_error::ProgramResult {
-        let mut accounts = Vec::with_capacity(3 + remaining_accounts.len());
-        accounts.push(solana_instruction::AccountMeta::new(
+        let mut accounts = Vec::with_capacity(4 + remaining_accounts.len());
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.authority.key,
             true,
         ));
+        accounts.push(solana_instruction::AccountMeta::new(*self.payer.key, true));
         accounts.push(solana_instruction::AccountMeta::new(
             *self.list_config.key,
             false,
@@ -260,9 +280,10 @@ impl<'a, 'b> CreateListCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(4 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(5 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.authority.clone());
+        account_infos.push(self.payer.clone());
         account_infos.push(self.list_config.clone());
         account_infos.push(self.system_program.clone());
         remaining_accounts
@@ -281,9 +302,10 @@ impl<'a, 'b> CreateListCpi<'a, 'b> {
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, signer]` authority
-///   1. `[writable]` list_config
-///   2. `[]` system_program
+///   0. `[signer]` authority
+///   1. `[writable, signer]` payer
+///   2. `[writable]` list_config
+///   3. `[]` system_program
 #[derive(Clone, Debug)]
 pub struct CreateListCpiBuilder<'a, 'b> {
     instruction: Box<CreateListCpiBuilderInstruction<'a, 'b>>,
@@ -294,6 +316,7 @@ impl<'a, 'b> CreateListCpiBuilder<'a, 'b> {
         let instruction = Box::new(CreateListCpiBuilderInstruction {
             __program: program,
             authority: None,
+            payer: None,
             list_config: None,
             system_program: None,
             mode: None,
@@ -305,6 +328,11 @@ impl<'a, 'b> CreateListCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn authority(&mut self, authority: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.authority = Some(authority);
+        self
+    }
+    #[inline(always)]
+    pub fn payer(&mut self, payer: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.payer = Some(payer);
         self
     }
     #[inline(always)]
@@ -376,6 +404,8 @@ impl<'a, 'b> CreateListCpiBuilder<'a, 'b> {
 
             authority: self.instruction.authority.expect("authority is not set"),
 
+            payer: self.instruction.payer.expect("payer is not set"),
+
             list_config: self
                 .instruction
                 .list_config
@@ -398,6 +428,7 @@ impl<'a, 'b> CreateListCpiBuilder<'a, 'b> {
 struct CreateListCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_account_info::AccountInfo<'a>,
     authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    payer: Option<&'b solana_account_info::AccountInfo<'a>>,
     list_config: Option<&'b solana_account_info::AccountInfo<'a>>,
     system_program: Option<&'b solana_account_info::AccountInfo<'a>>,
     mode: Option<Mode>,
