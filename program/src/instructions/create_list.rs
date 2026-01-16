@@ -30,7 +30,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for CreateList<'a> {
         }
 
         if !authority.is_signer() {
-            return Err(ABLError::InvalidAuthority.into());
+            return Err(ABLError::InvalidAuthority);
         }
 
         Ok(Self {

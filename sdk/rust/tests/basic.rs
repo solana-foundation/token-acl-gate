@@ -447,7 +447,6 @@ async fn fails_to_setup_list_extra_metas_with_invalid_gating_program() {
     );
 }
 
-
 #[tokio::test]
 async fn fails_to_removes_wallet_from_invalid_list() {
     let mut context = TestContext::new();
@@ -476,5 +475,8 @@ async fn fails_to_removes_wallet_from_invalid_list() {
     println!("res: {:?}", res);
     // err 14
     let err = res.err().unwrap();
-    assert_eq!(err.err, TransactionError::InstructionError(0, InstructionError::Custom(15)));
+    assert_eq!(
+        err.err,
+        TransactionError::InstructionError(0, InstructionError::Custom(15))
+    );
 }

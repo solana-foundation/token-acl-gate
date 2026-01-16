@@ -1,7 +1,8 @@
 #![no_std]
 
 use pinocchio::{
-    account_info::AccountInfo, default_allocator, program_entrypoint, program_error::ProgramError, pubkey::Pubkey, ProgramResult
+    account_info::AccountInfo, default_allocator, program_entrypoint, program_error::ProgramError,
+    pubkey::Pubkey, ProgramResult,
 };
 use pinocchio_pubkey::declare_id;
 

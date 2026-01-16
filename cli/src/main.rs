@@ -80,7 +80,7 @@ async fn process_create_list(
 ) -> Result<Signature, Box<dyn Error>> {
     let seed = Keypair::new().pubkey();
     let list_config =
-    token_acl_gate_client::accounts::ListConfig::find_pda(&payer.pubkey(), &seed).0;
+        token_acl_gate_client::accounts::ListConfig::find_pda(&payer.pubkey(), &seed).0;
     let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
         .authority(payer.pubkey())
         .seed(seed)
@@ -150,8 +150,7 @@ async fn process_add_wallet(
         .list_config(*list_address)
         .wallet(*wallet_address)
         .wallet_entry(
-            token_acl_gate_client::accounts::WalletEntry::find_pda(list_address, wallet_address)
-                .0,
+            token_acl_gate_client::accounts::WalletEntry::find_pda(list_address, wallet_address).0,
         )
         .instruction();
 
@@ -184,8 +183,7 @@ async fn process_remove_wallet(
         .authority(payer.pubkey())
         .list_config(*list_address)
         .wallet_entry(
-            token_acl_gate_client::accounts::WalletEntry::find_pda(list_address, wallet_address)
-                .0,
+            token_acl_gate_client::accounts::WalletEntry::find_pda(list_address, wallet_address).0,
         )
         .instruction();
 

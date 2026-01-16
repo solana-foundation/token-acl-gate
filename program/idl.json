@@ -149,6 +149,14 @@
                     "kind": "instructionAccountNode",
                     "name": "authority",
                     "docs": [],
+                    "isWritable": false,
+                    "isSigner": true,
+                    "isOptional": false
+                },
+                {
+                    "kind": "instructionAccountNode",
+                    "name": "payer",
+                    "docs": [],
                     "isWritable": true,
                     "isSigner": true,
                     "isOptional": false
@@ -224,6 +232,14 @@
                 {
                     "kind": "instructionAccountNode",
                     "name": "authority",
+                    "docs": [],
+                    "isWritable": false,
+                    "isSigner": true,
+                    "isOptional": false
+                },
+                {
+                    "kind": "instructionAccountNode",
+                    "name": "payer",
                     "docs": [],
                     "isWritable": true,
                     "isSigner": true,

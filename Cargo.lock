@@ -8717,7 +8717,6 @@ dependencies = [
  "spl-discriminator 0.4.1",
  "spl-tlv-account-resolution 0.10.0",
  "token-acl",
- "token-acl-client",
  "token-acl-interface",
 ]
 

@@ -20,7 +20,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for DeleteList<'a> {
         }
 
         if !authority.is_signer() || !authority.is_writable() {
-            return Err(ABLError::InvalidAuthority.into());
+            return Err(ABLError::InvalidAuthority);
         }
 
         Ok(Self {
