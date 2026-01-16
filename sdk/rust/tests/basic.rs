@@ -446,3 +446,35 @@ async fn fails_to_setup_list_extra_metas_with_invalid_gating_program() {
         TransactionError::InstructionError(1, InstructionError::Custom(6))
     );
 }
+
+
+#[tokio::test]
+async fn fails_to_removes_wallet_from_invalid_list() {
+    let mut context = TestContext::new();
+
+    let wallet_address = Pubkey::new_unique();
+    let list_config_address = context.create_list(Mode::Allow);
+    let list_config_address_2 = context.create_list(Mode::Block);
+    let wallet_entry = context.add_wallet_to_list(&list_config_address, &wallet_address);
+
+    let ix = token_acl_gate_client::instructions::RemoveWalletBuilder::new()
+        .authority(context.auth.pubkey())
+        .list_config(list_config_address_2)
+        .wallet_entry(wallet_entry)
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.auth.pubkey()),
+        &[context.auth.insecure_clone()],
+        context.vm.latest_blockhash(),
+    );
+
+    let res = context.vm.send_transaction(tx);
+    assert!(res.is_err());
+
+    println!("res: {:?}", res);
+    // err 14
+    let err = res.err().unwrap();
+    assert_eq!(err.err, TransactionError::InstructionError(0, InstructionError::Custom(15)));
+}

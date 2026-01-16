@@ -51,8 +51,9 @@ impl<'a> TryFrom<&'a [AccountInfo]> for RemoveWallet<'a> {
             return Err(ABLError::AccountNotWritable);
         }
 
-        if unsafe { load::<WalletEntry>(wallet_entry.borrow_data_unchecked()).is_err() } {
-            return Err(ABLError::InvalidAccountData);
+        let we = unsafe { load::<WalletEntry>(wallet_entry.borrow_data_unchecked())? };
+        if !we.list_config.eq(list_config.key()) {
+            return Err(ABLError::InvalidWalletEntry);
         }
 
         Ok(Self {

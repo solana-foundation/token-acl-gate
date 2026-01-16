@@ -17,6 +17,7 @@ pub enum ABLError {
     InvalidTokenAclMintConfig,
     ListNotEmpty,
     InvalidRemainingAccounts,
+    InvalidWalletEntry,
 }
 
 impl From<ABLError> for ProgramError {
