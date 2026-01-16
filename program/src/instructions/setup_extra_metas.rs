@@ -147,25 +147,30 @@ impl<'a> SetupExtraMetas<'a> {
             );
             let signer = [Signer::from(&seeds)];
 
-            // transfer
-            pinocchio_system::instructions::Transfer {
-                from: self.payer,
-                to: self.extra_metas,
-                lamports: min_lamports,
+            let current_lamports = self.extra_metas.lamports();
+            if current_lamports < min_lamports {
+                // transfer
+                pinocchio_system::instructions::Transfer {
+                    from: self.payer,
+                    to: self.extra_metas,
+                    lamports: min_lamports - current_lamports,
+                }
+                .invoke()?;
             }
-            .invoke()?;
-            
+
             // allocate
-            pinocchio_system::instructions::Allocate{
+            pinocchio_system::instructions::Allocate {
                 account: self.extra_metas,
                 space: data_len as u64,
-            }.invoke_signed(&signer)?;
+            }
+            .invoke_signed(&signer)?;
 
             // assign
             pinocchio_system::instructions::Assign {
                 account: self.extra_metas,
                 owner: &crate::ID,
-            }.invoke_signed(&signer)?;
+            }
+            .invoke_signed(&signer)?;
         }
 
         let mut extra_metas_data = self.extra_metas.try_borrow_mut_data()?;

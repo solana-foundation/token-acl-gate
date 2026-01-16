@@ -8589,7 +8589,8 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 [[package]]
 name = "token-acl"
 version = "0.1.0"
-source = "git+https://github.com/solana-foundation/token-acl#7f4238515c82aa8b0b43e590eb95d621ba406fd5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd4e0960a89fa9b25dbd76c1573bba0ec89d320ced430fe94ad4b328de0e5596"
 dependencies = [
  "arrayref",
  "bytemuck",
@@ -8612,7 +8613,8 @@ dependencies = [
 [[package]]
 name = "token-acl-client"
 version = "0.1.0"
-source = "git+https://github.com/solana-foundation/token-acl#7f4238515c82aa8b0b43e590eb95d621ba406fd5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b7fba3cdc6dff3c20b32fbee65f0f29b85a990fa39cc4b229cbed3f023045527"
 dependencies = [
  "arrayref",
  "borsh 0.10.4",
@@ -8715,13 +8717,15 @@ dependencies = [
  "spl-discriminator 0.4.1",
  "spl-tlv-account-resolution 0.10.0",
  "token-acl",
+ "token-acl-client",
  "token-acl-interface",
 ]
 
 [[package]]
 name = "token-acl-interface"
 version = "0.1.0"
-source = "git+https://github.com/solana-foundation/token-acl#7f4238515c82aa8b0b43e590eb95d621ba406fd5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08cded5a75436d0accd27c62341ee679939051b72599366794cc09d5be5971bf"
 dependencies = [
  "arrayref",
  "bytemuck",
