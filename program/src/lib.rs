@@ -1,11 +1,12 @@
 #![no_std]
 
 use pinocchio::{
-    account_info::AccountInfo, default_allocator, program_entrypoint, program_error::ProgramError, pubkey::Pubkey, ProgramResult
+    account_info::AccountInfo, default_allocator, program_entrypoint, program_error::ProgramError,
+    pubkey::Pubkey, ProgramResult,
 };
 use pinocchio_pubkey::declare_id;
 
-program_entrypoint!(process_instruction);
+program_entrypoint!(process_instruction, 16);
 
 // need allocator due to dependency on spl_tlv_account_resolution
 //no_allocator!();

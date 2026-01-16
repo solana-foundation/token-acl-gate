@@ -19,6 +19,10 @@ impl<'a> TryFrom<&'a [AccountInfo]> for DeleteList<'a> {
             return Err(ABLError::InvalidConfigAccount);
         }
 
+        if !authority.is_signer() || !authority.is_writable() {
+            return Err(ABLError::InvalidAuthority);
+        }
+
         Ok(Self {
             authority,
             list_config,
@@ -34,6 +38,10 @@ impl<'a> DeleteList<'a> {
             let list_config =
                 unsafe { load::<ListConfig>(self.list_config.borrow_data_unchecked())? };
 
+            if list_config.authority.ne(self.authority.key()) {
+                return Err(ABLError::InvalidAuthority.into());
+            }
+
             if list_config.get_wallets_count() > 0 {
                 return Err(ABLError::ListNotEmpty.into());
             }
@@ -43,9 +51,9 @@ impl<'a> DeleteList<'a> {
         let authority_lamports = unsafe { self.authority.borrow_mut_lamports_unchecked() };
 
         *authority_lamports += *list_config_lamports;
-        *list_config_lamports = 0;
 
-        self.list_config.resize(0)?;
+        // close will set lamports to 0
+        self.list_config.close()?;
 
         Ok(())
     }

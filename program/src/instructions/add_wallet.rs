@@ -13,6 +13,7 @@ use crate::{
 
 pub struct AddWallet<'a> {
     pub authority: &'a AccountInfo,
+    pub payer: &'a AccountInfo,
     pub list_config: &'a AccountInfo,
     pub wallet: &'a AccountInfo,
     pub wallet_entry: &'a AccountInfo,
@@ -40,16 +41,30 @@ impl<'a> AddWallet<'a> {
             self.wallet.key(),
             &bump_seed
         );
-        let signer = Signer::from(&seeds);
+        let signer = [Signer::from(&seeds)];
 
-        pinocchio_system::instructions::CreateAccount {
-            from: self.authority,
-            to: self.wallet_entry,
-            lamports,
+        let current_lamports = self.wallet_entry.lamports();
+
+        if lamports > current_lamports {
+            pinocchio_system::instructions::Transfer {
+                from: self.payer,
+                to: self.wallet_entry,
+                lamports: lamports - current_lamports,
+            }
+            .invoke()?;
+        }
+
+        pinocchio_system::instructions::Allocate {
+            account: self.wallet_entry,
             space: WalletEntry::LEN as u64,
+        }
+        .invoke_signed(&signer)?;
+
+        pinocchio_system::instructions::Assign {
+            account: self.wallet_entry,
             owner: &crate::ID,
         }
-        .invoke_signed(&[signer])?;
+        .invoke_signed(&signer)?;
 
         let mut data = self.wallet_entry.try_borrow_mut_data()?;
         let wallet_entry = unsafe { load_mut_unchecked::<WalletEntry>(&mut data)? };
@@ -67,7 +82,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for AddWallet<'a> {
     type Error = ABLError;
 
     fn try_from(accounts: &'a [AccountInfo]) -> Result<Self, Self::Error> {
-        let [authority, list_config, wallet, wallet_entry, system_program] = accounts else {
+        let [authority, payer, list_config, wallet, wallet_entry, system_program] = accounts else {
             return Err(ABLError::NotEnoughAccounts);
         };
 
@@ -91,6 +106,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for AddWallet<'a> {
 
         Ok(Self {
             authority,
+            payer,
             list_config,
             wallet,
             wallet_entry,
