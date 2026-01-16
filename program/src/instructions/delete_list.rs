@@ -19,7 +19,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for DeleteList<'a> {
             return Err(ABLError::InvalidConfigAccount);
         }
 
-        if !authority.is_signer() {
+        if !authority.is_signer() || !authority.is_writable() {
             return Err(ABLError::InvalidAuthority.into());
         }
 
@@ -51,7 +51,7 @@ impl<'a> DeleteList<'a> {
         let authority_lamports = unsafe { self.authority.borrow_mut_lamports_unchecked() };
 
         *authority_lamports += *list_config_lamports;
-        
+
         // close will set lamports to 0
         self.list_config.close()?;
 
