@@ -107,8 +107,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for CanThawPermissionless<'a> {
          4- owner
          5- flag account
          6- extra account metas
-         7- (optional) source wallet block
-         8- (optional) destination wallet block
+         (remaining accounts are pairs of list and wallet)
          */
 
         let [authority, token_account, mint, owner, _flag_account, extra_metas, remaining_accounts @ ..] =
@@ -116,6 +115,10 @@ impl<'a> TryFrom<&'a [AccountInfo]> for CanThawPermissionless<'a> {
         else {
             return Err(ABLError::NotEnoughAccounts);
         };
+
+        if remaining_accounts.len() % 2 != 0 {
+            return Err(ABLError::InvalidRemainingAccounts.into());
+        }
 
         Ok(Self {
             authority,

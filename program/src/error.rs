@@ -16,6 +16,7 @@ pub enum ABLError {
     InvalidData,
     InvalidTokenAclMintConfig,
     ListNotEmpty,
+    InvalidRemainingAccounts,
 }
 
 impl From<ABLError> for ProgramError {
