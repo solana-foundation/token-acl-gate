@@ -49,6 +49,41 @@ async fn creates_list() {
 }
 
 #[tokio::test]
+async fn fails_to_creates_list_with_non_pda_list() {
+    let mut context = TestContext::new();
+
+    let seed = Pubkey::new_unique();
+    let (_list_config_address, _) =
+        token_acl_gate_client::accounts::ListConfig::find_pda(&context.auth.pubkey(), &seed);
+
+        let list_cfg_kp = Keypair::new();
+        context.vm.airdrop(&list_cfg_kp.pubkey(), 1_000_000_000).unwrap();
+
+    let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
+        .authority(context.auth.pubkey())
+        .payer(context.auth.pubkey())
+        .list_config(list_cfg_kp.pubkey())
+        .mode(Mode::Allow)
+        .seed(seed)
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&list_cfg_kp.pubkey()),
+        &[context.auth.insecure_clone(), list_cfg_kp.insecure_clone()],
+        context.vm.latest_blockhash(),
+    );
+    let res = context.vm.send_transaction(tx);
+    assert!(res.is_err());
+
+    let err = res.err().unwrap();
+    assert_eq!(
+        err.err,
+        TransactionError::InstructionError(0, InstructionError::Custom(16))
+    );
+}
+
+#[tokio::test]
 async fn creates_list_with_different_mode() {
     let mut context = TestContext::new();
 

@@ -62,10 +62,14 @@ impl<'a> CreateList<'a> {
 
         // find canonical bump to prepare signer seeds for cpi
         let seed = TryInto::<&[u8; 32]>::try_into(seed).unwrap();
-        let (_, config_bump) = find_program_address(
+        let (config_pk, config_bump) = find_program_address(
             &[ListConfig::SEED_PREFIX, self.authority.key(), seed],
             &crate::ID,
         );
+
+        if config_pk.ne(self.list_config.key()) {
+            return Err(ABLError::InvalidListConfig.into());
+        }
 
         // prepare signer seeds for cpi
         let bump_seed = [config_bump];

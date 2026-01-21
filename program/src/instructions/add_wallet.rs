@@ -94,10 +94,14 @@ impl<'a> TryFrom<&'a [AccountInfo]> for AddWallet<'a> {
             return Err(ABLError::AccountNotWritable);
         }
 
-        let (_, wallet_entry_bump) = find_program_address(
+        let (wallet_entry_pk, wallet_entry_bump) = find_program_address(
             &[WalletEntry::SEED_PREFIX, list_config.key(), wallet.key()],
             &crate::ID,
         );
+
+        if wallet_entry_pk.ne(wallet_entry.key()) {
+            return Err(ABLError::InvalidWalletEntry.into());
+        }
 
         // check if system program is valid
         if system_program.key().ne(&pinocchio_system::ID) {
