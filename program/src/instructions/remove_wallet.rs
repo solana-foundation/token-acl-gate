@@ -26,12 +26,10 @@ impl<'a> RemoveWallet<'a> {
             *self.authority.borrow_mut_lamports_unchecked() = destination_lamports
                 .checked_add(self.wallet_entry.lamports())
                 .ok_or(ProgramError::ArithmeticOverflow)?;
-            self.wallet_entry.close_unchecked();
         }
+        self.wallet_entry.close()?;
 
         list_config.decrement_wallets_count()?;
-
-        self.wallet_entry.resize(0)?;
 
         Ok(())
     }
@@ -53,8 +51,13 @@ impl<'a> TryFrom<&'a [AccountInfo]> for RemoveWallet<'a> {
             return Err(ABLError::AccountNotWritable);
         }
 
-        if unsafe { load::<WalletEntry>(wallet_entry.borrow_data_unchecked()).is_err() } {
-            return Err(ABLError::InvalidAccountData);
+        if !wallet_entry.is_owned_by(&crate::ID) {
+            return Err(ABLError::InvalidWalletEntry);
+        }
+
+        let we = unsafe { load::<WalletEntry>(wallet_entry.borrow_data_unchecked())? };
+        if !we.list_config.eq(list_config.key()) {
+            return Err(ABLError::InvalidWalletEntry);
         }
 
         Ok(Self {

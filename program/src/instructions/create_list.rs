@@ -11,6 +11,7 @@ use crate::{load_mut_unchecked, ABLError, Discriminator, ListConfig, Transmutabl
 
 pub struct CreateList<'a> {
     pub authority: &'a AccountInfo,
+    pub payer: &'a AccountInfo,
     pub list_config: &'a AccountInfo,
     pub system_program: &'a AccountInfo,
 }
@@ -19,7 +20,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for CreateList<'a> {
     type Error = ABLError;
 
     fn try_from(accounts: &'a [AccountInfo]) -> Result<Self, Self::Error> {
-        let [authority, list_config, system_program] = accounts else {
+        let [authority, payer, list_config, system_program] = accounts else {
             return Err(ABLError::NotEnoughAccounts);
         };
 
@@ -28,8 +29,13 @@ impl<'a> TryFrom<&'a [AccountInfo]> for CreateList<'a> {
             return Err(ABLError::InvalidSystemProgram);
         }
 
+        if !authority.is_signer() {
+            return Err(ABLError::InvalidAuthority);
+        }
+
         Ok(Self {
             authority,
+            payer,
             list_config,
             system_program,
         })
@@ -56,10 +62,14 @@ impl<'a> CreateList<'a> {
 
         // find canonical bump to prepare signer seeds for cpi
         let seed = TryInto::<&[u8; 32]>::try_into(seed).unwrap();
-        let (_, config_bump) = find_program_address(
+        let (config_pk, config_bump) = find_program_address(
             &[ListConfig::SEED_PREFIX, self.authority.key(), seed],
             &crate::ID,
         );
+
+        if config_pk.ne(self.list_config.key()) {
+            return Err(ABLError::InvalidListConfig.into());
+        }
 
         // prepare signer seeds for cpi
         let bump_seed = [config_bump];
@@ -69,16 +79,29 @@ impl<'a> CreateList<'a> {
             seed,
             &bump_seed
         );
-        let signer = Signer::from(&seeds);
+        let signer = [Signer::from(&seeds)];
 
-        pinocchio_system::instructions::CreateAccount {
-            from: self.authority,
-            to: self.list_config,
-            lamports,
+        let current_lamports = self.list_config.lamports();
+        if lamports > current_lamports {
+            pinocchio_system::instructions::Transfer {
+                from: self.payer,
+                to: self.list_config,
+                lamports: lamports - current_lamports,
+            }
+            .invoke()?;
+        }
+
+        pinocchio_system::instructions::Allocate {
+            account: self.list_config,
             space: ListConfig::LEN as u64,
+        }
+        .invoke_signed(&signer)?;
+
+        pinocchio_system::instructions::Assign {
+            account: self.list_config,
             owner: &crate::ID,
         }
-        .invoke_signed(&[signer])?;
+        .invoke_signed(&signer)?;
 
         let mut data = self.list_config.try_borrow_mut_data()?;
         let list = unsafe { load_mut_unchecked::<ListConfig>(&mut data)? };

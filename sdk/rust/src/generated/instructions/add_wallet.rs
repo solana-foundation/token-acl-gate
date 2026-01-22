@@ -15,6 +15,8 @@ pub const ADD_WALLET_DISCRIMINATOR: u8 = 2;
 pub struct AddWallet {
     pub authority: solana_pubkey::Pubkey,
 
+    pub payer: solana_pubkey::Pubkey,
+
     pub list_config: solana_pubkey::Pubkey,
 
     pub wallet: solana_pubkey::Pubkey,
@@ -34,8 +36,12 @@ impl AddWallet {
         &self,
         remaining_accounts: &[solana_instruction::AccountMeta],
     ) -> solana_instruction::Instruction {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
-        accounts.push(solana_instruction::AccountMeta::new(self.authority, true));
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
+            self.authority,
+            true,
+        ));
+        accounts.push(solana_instruction::AccountMeta::new(self.payer, true));
         accounts.push(solana_instruction::AccountMeta::new(
             self.list_config,
             false,
@@ -89,14 +95,16 @@ impl Default for AddWalletInstructionData {
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, signer]` authority
-///   1. `[writable]` list_config
-///   2. `[]` wallet
-///   3. `[writable]` wallet_entry
-///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   0. `[signer]` authority
+///   1. `[writable, signer]` payer
+///   2. `[writable]` list_config
+///   3. `[]` wallet
+///   4. `[writable]` wallet_entry
+///   5. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct AddWalletBuilder {
     authority: Option<solana_pubkey::Pubkey>,
+    payer: Option<solana_pubkey::Pubkey>,
     list_config: Option<solana_pubkey::Pubkey>,
     wallet: Option<solana_pubkey::Pubkey>,
     wallet_entry: Option<solana_pubkey::Pubkey>,
@@ -111,6 +119,11 @@ impl AddWalletBuilder {
     #[inline(always)]
     pub fn authority(&mut self, authority: solana_pubkey::Pubkey) -> &mut Self {
         self.authority = Some(authority);
+        self
+    }
+    #[inline(always)]
+    pub fn payer(&mut self, payer: solana_pubkey::Pubkey) -> &mut Self {
+        self.payer = Some(payer);
         self
     }
     #[inline(always)]
@@ -153,6 +166,7 @@ impl AddWalletBuilder {
     pub fn instruction(&self) -> solana_instruction::Instruction {
         let accounts = AddWallet {
             authority: self.authority.expect("authority is not set"),
+            payer: self.payer.expect("payer is not set"),
             list_config: self.list_config.expect("list_config is not set"),
             wallet: self.wallet.expect("wallet is not set"),
             wallet_entry: self.wallet_entry.expect("wallet_entry is not set"),
@@ -169,6 +183,8 @@ impl AddWalletBuilder {
 pub struct AddWalletCpiAccounts<'a, 'b> {
     pub authority: &'b solana_account_info::AccountInfo<'a>,
 
+    pub payer: &'b solana_account_info::AccountInfo<'a>,
+
     pub list_config: &'b solana_account_info::AccountInfo<'a>,
 
     pub wallet: &'b solana_account_info::AccountInfo<'a>,
@@ -184,6 +200,8 @@ pub struct AddWalletCpi<'a, 'b> {
     pub __program: &'b solana_account_info::AccountInfo<'a>,
 
     pub authority: &'b solana_account_info::AccountInfo<'a>,
+
+    pub payer: &'b solana_account_info::AccountInfo<'a>,
 
     pub list_config: &'b solana_account_info::AccountInfo<'a>,
 
@@ -202,6 +220,7 @@ impl<'a, 'b> AddWalletCpi<'a, 'b> {
         Self {
             __program: program,
             authority: accounts.authority,
+            payer: accounts.payer,
             list_config: accounts.list_config,
             wallet: accounts.wallet,
             wallet_entry: accounts.wallet_entry,
@@ -231,11 +250,12 @@ impl<'a, 'b> AddWalletCpi<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
         remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program_error::ProgramResult {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
-        accounts.push(solana_instruction::AccountMeta::new(
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
+        accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.authority.key,
             true,
         ));
+        accounts.push(solana_instruction::AccountMeta::new(*self.payer.key, true));
         accounts.push(solana_instruction::AccountMeta::new(
             *self.list_config.key,
             false,
@@ -266,9 +286,10 @@ impl<'a, 'b> AddWalletCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(7 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.authority.clone());
+        account_infos.push(self.payer.clone());
         account_infos.push(self.list_config.clone());
         account_infos.push(self.wallet.clone());
         account_infos.push(self.wallet_entry.clone());
@@ -289,11 +310,12 @@ impl<'a, 'b> AddWalletCpi<'a, 'b> {
 ///
 /// ### Accounts:
 ///
-///   0. `[writable, signer]` authority
-///   1. `[writable]` list_config
-///   2. `[]` wallet
-///   3. `[writable]` wallet_entry
-///   4. `[]` system_program
+///   0. `[signer]` authority
+///   1. `[writable, signer]` payer
+///   2. `[writable]` list_config
+///   3. `[]` wallet
+///   4. `[writable]` wallet_entry
+///   5. `[]` system_program
 #[derive(Clone, Debug)]
 pub struct AddWalletCpiBuilder<'a, 'b> {
     instruction: Box<AddWalletCpiBuilderInstruction<'a, 'b>>,
@@ -304,6 +326,7 @@ impl<'a, 'b> AddWalletCpiBuilder<'a, 'b> {
         let instruction = Box::new(AddWalletCpiBuilderInstruction {
             __program: program,
             authority: None,
+            payer: None,
             list_config: None,
             wallet: None,
             wallet_entry: None,
@@ -315,6 +338,11 @@ impl<'a, 'b> AddWalletCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn authority(&mut self, authority: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.authority = Some(authority);
+        self
+    }
+    #[inline(always)]
+    pub fn payer(&mut self, payer: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.payer = Some(payer);
         self
     }
     #[inline(always)]
@@ -385,6 +413,8 @@ impl<'a, 'b> AddWalletCpiBuilder<'a, 'b> {
 
             authority: self.instruction.authority.expect("authority is not set"),
 
+            payer: self.instruction.payer.expect("payer is not set"),
+
             list_config: self
                 .instruction
                 .list_config
@@ -413,6 +443,7 @@ impl<'a, 'b> AddWalletCpiBuilder<'a, 'b> {
 struct AddWalletCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_account_info::AccountInfo<'a>,
     authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    payer: Option<&'b solana_account_info::AccountInfo<'a>>,
     list_config: Option<&'b solana_account_info::AccountInfo<'a>>,
     wallet: Option<&'b solana_account_info::AccountInfo<'a>>,
     wallet_entry: Option<&'b solana_account_info::AccountInfo<'a>>,

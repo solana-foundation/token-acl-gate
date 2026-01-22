@@ -1,5 +1,4 @@
 pub mod program_test;
-use token_acl_gate_client::types::Mode;
 use solana_keypair::Keypair;
 use solana_sdk::{
     program_option::COption, program_pack::Pack, signer::Signer, transaction::Transaction,
@@ -9,6 +8,7 @@ use spl_associated_token_account_client::{
     instruction::create_associated_token_account,
 };
 use spl_token_2022::state::{Account, AccountState};
+use token_acl_gate_client::types::Mode;
 
 use crate::program_test::TestContext;
 
