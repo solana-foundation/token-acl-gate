@@ -1,4 +1,4 @@
-use pinocchio::{account_info::AccountInfo, ProgramResult};
+use pinocchio::{ProgramResult, account_info::AccountInfo, pubkey::Pubkey};
 
 use crate::{load, ABLError, ListConfig, WalletEntry};
 
@@ -53,6 +53,11 @@ impl<'a> CanThawPermissionless<'a> {
         owner: &AccountInfo,
         wallet_entry: &AccountInfo,
     ) -> ProgramResult {
+
+        if !list.is_owned_by(&crate::ID) {
+            return Err(ABLError::InvalidListConfig.into());
+        }
+
         let list_data: &[u8] = &list.try_borrow_data()?;
         let list_config = unsafe { load::<ListConfig>(list_data)? };
 
@@ -63,9 +68,13 @@ impl<'a> CanThawPermissionless<'a> {
         match list_config.get_mode() {
             crate::Mode::Allow => {
                 let ab_wallet_data: &[u8] = &wallet_entry.try_borrow_data()?;
-                let _ = unsafe {
+                let wallet = unsafe {
                     load::<WalletEntry>(ab_wallet_data).map_err(|_| ABLError::AccountBlocked)?
                 };
+
+                if !wallet_entry.is_owned_by(&crate::ID) || wallet.list_config.ne(list.key()) {
+                    return Err(ABLError::InvalidWalletEntry.into());
+                }
 
                 Ok(())
             }
@@ -74,9 +83,13 @@ impl<'a> CanThawPermissionless<'a> {
 
                 if !solana_curve25519::edwards::validate_edwards(&pt) {
                     let ab_wallet_data: &[u8] = &wallet_entry.try_borrow_data()?;
-                    let _ = unsafe {
+                    let wallet = unsafe {
                         load::<WalletEntry>(ab_wallet_data).map_err(|_| ABLError::AccountBlocked)?
                     };
+                    
+                    if !wallet_entry.is_owned_by(&crate::ID) || wallet.list_config.ne(list.key()) {
+                        return Err(ABLError::InvalidWalletEntry.into());
+                    }
                 }
 
                 Ok(())
@@ -85,7 +98,16 @@ impl<'a> CanThawPermissionless<'a> {
                 let ab_wallet_data: &[u8] = &wallet_entry.try_borrow_data()?;
                 let res = unsafe { load::<WalletEntry>(ab_wallet_data) };
 
-                if res.is_ok() {
+                // either the block exists and is owned by this program
+                // or it doest exist. We want to avoid PDA derivation to waste more CUs
+                if !wallet_entry.is_owned_by(&Pubkey::default()) && !wallet_entry.is_owned_by(&crate::ID) {
+                    return Err(ABLError::InvalidWalletEntry.into());
+                }
+
+                if let Ok(wallet) = res {
+                    if wallet.list_config.ne(list.key()) {
+                        return Err(ABLError::InvalidWalletEntry.into());
+                    }
                     Err(ABLError::AccountBlocked.into())
                 } else {
                     Ok(())
