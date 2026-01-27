@@ -108,6 +108,13 @@ GATEzzqxhJnsWF6vHRsgtixxSB8PaQdcqGEVTEHWiULz
 
 The CLI provides commands to manage allow/block lists and configure them for token mints.
 
+#### Installing the CLI
+
+```bash
+# Install the CLI from crates.io
+cargo install token-acl-gate-cli
+```
+
 #### Global Options
 
 - `-C, --config <PATH>` - Configuration file to use

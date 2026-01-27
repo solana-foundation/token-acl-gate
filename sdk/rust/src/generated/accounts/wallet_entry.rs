@@ -36,31 +36,31 @@ impl WalletEntry {
     ///
     ///   0. `WalletEntry::PREFIX`
     ///   1. list_config (`Pubkey`)
-    ///   2. wallet_address (`Pubkey`)
+    ///   2. wallet (`Pubkey`)
     pub const PREFIX: &'static [u8] = "wallet_entry".as_bytes();
 
     pub fn create_pda(
         list_config: Pubkey,
-        wallet_address: Pubkey,
+        wallet: Pubkey,
         bump: u8,
     ) -> Result<solana_pubkey::Pubkey, solana_pubkey::PubkeyError> {
         solana_pubkey::Pubkey::create_program_address(
             &[
                 "wallet_entry".as_bytes(),
                 list_config.as_ref(),
-                wallet_address.as_ref(),
+                wallet.as_ref(),
                 &[bump],
             ],
             &crate::TOKEN_ACL_GATE_PROGRAM_ID,
         )
     }
 
-    pub fn find_pda(list_config: &Pubkey, wallet_address: &Pubkey) -> (solana_pubkey::Pubkey, u8) {
+    pub fn find_pda(list_config: &Pubkey, wallet: &Pubkey) -> (solana_pubkey::Pubkey, u8) {
         solana_pubkey::Pubkey::find_program_address(
             &[
                 "wallet_entry".as_bytes(),
                 list_config.as_ref(),
-                wallet_address.as_ref(),
+                wallet.as_ref(),
             ],
             &crate::TOKEN_ACL_GATE_PROGRAM_ID,
         )

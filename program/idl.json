@@ -167,7 +167,32 @@
                     "docs": [],
                     "isWritable": true,
                     "isSigner": false,
-                    "isOptional": false
+                    "isOptional": false,
+                    "defaultValue": {
+                        "kind": "pdaValueNode",
+                        "pda": {
+                            "kind": "pdaLinkNode",
+                            "name": "listConfig"
+                        },
+                        "seeds": [
+                            {
+                                "kind": "pdaSeedValueNode",
+                                "name": "authority",
+                                "value": {
+                                    "kind": "accountValueNode",
+                                    "name": "authority"
+                                }
+                            },
+                            {
+                                "kind": "pdaSeedValueNode",
+                                "name": "seed",
+                                "value": {
+                                    "kind": "argumentValueNode",
+                                    "name": "seed"
+                                }
+                            }
+                        ]
+                    }
                 },
                 {
                     "kind": "instructionAccountNode",
@@ -267,7 +292,32 @@
                     "docs": [],
                     "isWritable": true,
                     "isSigner": false,
-                    "isOptional": false
+                    "isOptional": false,
+                    "defaultValue": {
+                        "kind": "pdaValueNode",
+                        "pda": {
+                            "kind": "pdaLinkNode",
+                            "name": "walletEntry"
+                        },
+                        "seeds": [
+                            {
+                                "kind": "pdaSeedValueNode",
+                                "name": "listConfig",
+                                "value": {
+                                    "kind": "accountValueNode",
+                                    "name": "listConfig"
+                                }
+                            },
+                            {
+                                "kind": "pdaSeedValueNode",
+                                "name": "wallet",
+                                "value": {
+                                    "kind": "accountValueNode",
+                                    "name": "wallet"
+                                }
+                            }
+                        ]
+                    }
                 },
                 {
                     "kind": "instructionAccountNode",
@@ -582,14 +632,14 @@
                 },
                 {
                     "kind": "variablePdaSeedNode",
-                    "name": "list_config",
+                    "name": "listConfig",
                     "type": {
                       "kind": "publicKeyTypeNode"
                     }
                 },
                 {
                     "kind": "variablePdaSeedNode",
-                    "name": "wallet_address",
+                    "name": "wallet",
                     "type": {
                       "kind": "publicKeyTypeNode"
                     }

@@ -11,10 +11,6 @@ name = "token_acl_gate_client"
 
 [features]
 default = []
-serde = []
-fetch = []
-anchor = []
-anchor-idl-build = []
 
 [dependencies]
 solana-program = { workspace = true }

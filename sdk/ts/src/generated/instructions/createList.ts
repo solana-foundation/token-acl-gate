@@ -31,8 +31,14 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
+import { findListConfigPda } from '../pdas';
 import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  expectAddress,
+  expectSome,
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared';
 import {
   getModeDecoder,
   getModeEncoder,
@@ -112,6 +118,96 @@ export function getCreateListInstructionDataCodec(): FixedSizeCodec<
     getCreateListInstructionDataEncoder(),
     getCreateListInstructionDataDecoder()
   );
+}
+
+export type CreateListAsyncInput<
+  TAccountAuthority extends string = string,
+  TAccountPayer extends string = string,
+  TAccountListConfig extends string = string,
+  TAccountSystemProgram extends string = string,
+> = {
+  authority: TransactionSigner<TAccountAuthority>;
+  payer: TransactionSigner<TAccountPayer>;
+  listConfig?: Address<TAccountListConfig>;
+  systemProgram?: Address<TAccountSystemProgram>;
+  mode: CreateListInstructionDataArgs['mode'];
+  seed: CreateListInstructionDataArgs['seed'];
+};
+
+export async function getCreateListInstructionAsync<
+  TAccountAuthority extends string,
+  TAccountPayer extends string,
+  TAccountListConfig extends string,
+  TAccountSystemProgram extends string,
+  TProgramAddress extends
+    Address = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
+>(
+  input: CreateListAsyncInput<
+    TAccountAuthority,
+    TAccountPayer,
+    TAccountListConfig,
+    TAccountSystemProgram
+  >,
+  config?: { programAddress?: TProgramAddress }
+): Promise<
+  CreateListInstruction<
+    TProgramAddress,
+    TAccountAuthority,
+    TAccountPayer,
+    TAccountListConfig,
+    TAccountSystemProgram
+  >
+> {
+  // Program address.
+  const programAddress =
+    config?.programAddress ?? TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS;
+
+  // Original accounts.
+  const originalAccounts = {
+    authority: { value: input.authority ?? null, isWritable: false },
+    payer: { value: input.payer ?? null, isWritable: true },
+    listConfig: { value: input.listConfig ?? null, isWritable: true },
+    systemProgram: { value: input.systemProgram ?? null, isWritable: false },
+  };
+  const accounts = originalAccounts as Record<
+    keyof typeof originalAccounts,
+    ResolvedAccount
+  >;
+
+  // Original args.
+  const args = { ...input };
+
+  // Resolve default values.
+  if (!accounts.listConfig.value) {
+    accounts.listConfig.value = await findListConfigPda({
+      authority: expectAddress(accounts.authority.value),
+      seed: expectSome(args.seed),
+    });
+  }
+  if (!accounts.systemProgram.value) {
+    accounts.systemProgram.value =
+      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+  }
+
+  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  return Object.freeze({
+    accounts: [
+      getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.payer),
+      getAccountMeta(accounts.listConfig),
+      getAccountMeta(accounts.systemProgram),
+    ],
+    data: getCreateListInstructionDataEncoder().encode(
+      args as CreateListInstructionDataArgs
+    ),
+    programAddress,
+  } as CreateListInstruction<
+    TProgramAddress,
+    TAccountAuthority,
+    TAccountPayer,
+    TAccountListConfig,
+    TAccountSystemProgram
+  >);
 }
 
 export type CreateListInput<
