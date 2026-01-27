@@ -113,12 +113,20 @@ pub fn has_immutable_owner_extension(token_account: &AccountInfo) -> bool {
     let end = extension_bytes.len();
 
     while start < end {
-        let extension_type = u16::from_le_bytes(extension_bytes[start..start + EXTENSION_TYPE_BYTES_LEN].try_into().unwrap());
+        let extension_type = u16::from_le_bytes(
+            extension_bytes[start..start + EXTENSION_TYPE_BYTES_LEN]
+                .try_into()
+                .unwrap(),
+        );
         if extension_type == IMMUTABLE_OWNER_EXTENSION_ID {
             return true;
         }
 
-        let extension_len = u16::from_le_bytes(extension_bytes[start + EXTENSION_TYPE_BYTES_LEN..start + EXTENSION_HEADER_LEN].try_into().unwrap());
+        let extension_len = u16::from_le_bytes(
+            extension_bytes[start + EXTENSION_TYPE_BYTES_LEN..start + EXTENSION_HEADER_LEN]
+                .try_into()
+                .unwrap(),
+        );
         start += EXTENSION_HEADER_LEN + extension_len as usize;
     }
     false

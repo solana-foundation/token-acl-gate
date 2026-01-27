@@ -23,13 +23,19 @@ import {
   type InstructionWithAccounts,
   type InstructionWithData,
   type ReadonlyAccount,
+  type ReadonlySignerAccount,
   type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
+import { findWalletEntryPda } from '../pdas';
 import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  expectAddress,
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared';
 
 export const ADD_WALLET_DISCRIMINATOR = 2;
 
@@ -40,6 +46,7 @@ export function getAddWalletDiscriminatorBytes() {
 export type AddWalletInstruction<
   TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountAuthority extends string | AccountMeta<string> = string,
+  TAccountPayer extends string | AccountMeta<string> = string,
   TAccountListConfig extends string | AccountMeta<string> = string,
   TAccountWallet extends string | AccountMeta<string> = string,
   TAccountWalletEntry extends string | AccountMeta<string> = string,
@@ -52,9 +59,13 @@ export type AddWalletInstruction<
   InstructionWithAccounts<
     [
       TAccountAuthority extends string
-        ? WritableSignerAccount<TAccountAuthority> &
+        ? ReadonlySignerAccount<TAccountAuthority> &
             AccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
+      TAccountPayer extends string
+        ? WritableSignerAccount<TAccountPayer> &
+            AccountSignerMeta<TAccountPayer>
+        : TAccountPayer,
       TAccountListConfig extends string
         ? WritableAccount<TAccountListConfig>
         : TAccountListConfig,
@@ -96,14 +107,115 @@ export function getAddWalletInstructionDataCodec(): FixedSizeCodec<
   );
 }
 
-export type AddWalletInput<
+export type AddWalletAsyncInput<
   TAccountAuthority extends string = string,
+  TAccountPayer extends string = string,
   TAccountListConfig extends string = string,
   TAccountWallet extends string = string,
   TAccountWalletEntry extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
+  payer: TransactionSigner<TAccountPayer>;
+  listConfig: Address<TAccountListConfig>;
+  wallet: Address<TAccountWallet>;
+  walletEntry?: Address<TAccountWalletEntry>;
+  systemProgram?: Address<TAccountSystemProgram>;
+};
+
+export async function getAddWalletInstructionAsync<
+  TAccountAuthority extends string,
+  TAccountPayer extends string,
+  TAccountListConfig extends string,
+  TAccountWallet extends string,
+  TAccountWalletEntry extends string,
+  TAccountSystemProgram extends string,
+  TProgramAddress extends
+    Address = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
+>(
+  input: AddWalletAsyncInput<
+    TAccountAuthority,
+    TAccountPayer,
+    TAccountListConfig,
+    TAccountWallet,
+    TAccountWalletEntry,
+    TAccountSystemProgram
+  >,
+  config?: { programAddress?: TProgramAddress }
+): Promise<
+  AddWalletInstruction<
+    TProgramAddress,
+    TAccountAuthority,
+    TAccountPayer,
+    TAccountListConfig,
+    TAccountWallet,
+    TAccountWalletEntry,
+    TAccountSystemProgram
+  >
+> {
+  // Program address.
+  const programAddress =
+    config?.programAddress ?? TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS;
+
+  // Original accounts.
+  const originalAccounts = {
+    authority: { value: input.authority ?? null, isWritable: false },
+    payer: { value: input.payer ?? null, isWritable: true },
+    listConfig: { value: input.listConfig ?? null, isWritable: true },
+    wallet: { value: input.wallet ?? null, isWritable: false },
+    walletEntry: { value: input.walletEntry ?? null, isWritable: true },
+    systemProgram: { value: input.systemProgram ?? null, isWritable: false },
+  };
+  const accounts = originalAccounts as Record<
+    keyof typeof originalAccounts,
+    ResolvedAccount
+  >;
+
+  // Resolve default values.
+  if (!accounts.walletEntry.value) {
+    accounts.walletEntry.value = await findWalletEntryPda({
+      listConfig: expectAddress(accounts.listConfig.value),
+      wallet: expectAddress(accounts.wallet.value),
+    });
+  }
+  if (!accounts.systemProgram.value) {
+    accounts.systemProgram.value =
+      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+  }
+
+  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  return Object.freeze({
+    accounts: [
+      getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.payer),
+      getAccountMeta(accounts.listConfig),
+      getAccountMeta(accounts.wallet),
+      getAccountMeta(accounts.walletEntry),
+      getAccountMeta(accounts.systemProgram),
+    ],
+    data: getAddWalletInstructionDataEncoder().encode({}),
+    programAddress,
+  } as AddWalletInstruction<
+    TProgramAddress,
+    TAccountAuthority,
+    TAccountPayer,
+    TAccountListConfig,
+    TAccountWallet,
+    TAccountWalletEntry,
+    TAccountSystemProgram
+  >);
+}
+
+export type AddWalletInput<
+  TAccountAuthority extends string = string,
+  TAccountPayer extends string = string,
+  TAccountListConfig extends string = string,
+  TAccountWallet extends string = string,
+  TAccountWalletEntry extends string = string,
+  TAccountSystemProgram extends string = string,
+> = {
+  authority: TransactionSigner<TAccountAuthority>;
+  payer: TransactionSigner<TAccountPayer>;
   listConfig: Address<TAccountListConfig>;
   wallet: Address<TAccountWallet>;
   walletEntry: Address<TAccountWalletEntry>;
@@ -112,6 +224,7 @@ export type AddWalletInput<
 
 export function getAddWalletInstruction<
   TAccountAuthority extends string,
+  TAccountPayer extends string,
   TAccountListConfig extends string,
   TAccountWallet extends string,
   TAccountWalletEntry extends string,
@@ -121,6 +234,7 @@ export function getAddWalletInstruction<
 >(
   input: AddWalletInput<
     TAccountAuthority,
+    TAccountPayer,
     TAccountListConfig,
     TAccountWallet,
     TAccountWalletEntry,
@@ -130,6 +244,7 @@ export function getAddWalletInstruction<
 ): AddWalletInstruction<
   TProgramAddress,
   TAccountAuthority,
+  TAccountPayer,
   TAccountListConfig,
   TAccountWallet,
   TAccountWalletEntry,
@@ -141,7 +256,8 @@ export function getAddWalletInstruction<
 
   // Original accounts.
   const originalAccounts = {
-    authority: { value: input.authority ?? null, isWritable: true },
+    authority: { value: input.authority ?? null, isWritable: false },
+    payer: { value: input.payer ?? null, isWritable: true },
     listConfig: { value: input.listConfig ?? null, isWritable: true },
     wallet: { value: input.wallet ?? null, isWritable: false },
     walletEntry: { value: input.walletEntry ?? null, isWritable: true },
@@ -162,6 +278,7 @@ export function getAddWalletInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.payer),
       getAccountMeta(accounts.listConfig),
       getAccountMeta(accounts.wallet),
       getAccountMeta(accounts.walletEntry),
@@ -172,6 +289,7 @@ export function getAddWalletInstruction<
   } as AddWalletInstruction<
     TProgramAddress,
     TAccountAuthority,
+    TAccountPayer,
     TAccountListConfig,
     TAccountWallet,
     TAccountWalletEntry,
@@ -186,10 +304,11 @@ export type ParsedAddWalletInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     authority: TAccountMetas[0];
-    listConfig: TAccountMetas[1];
-    wallet: TAccountMetas[2];
-    walletEntry: TAccountMetas[3];
-    systemProgram: TAccountMetas[4];
+    payer: TAccountMetas[1];
+    listConfig: TAccountMetas[2];
+    wallet: TAccountMetas[3];
+    walletEntry: TAccountMetas[4];
+    systemProgram: TAccountMetas[5];
   };
   data: AddWalletInstructionData;
 };
@@ -202,7 +321,7 @@ export function parseAddWalletInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedAddWalletInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 5) {
+  if (instruction.accounts.length < 6) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -216,6 +335,7 @@ export function parseAddWalletInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       authority: getNextAccount(),
+      payer: getNextAccount(),
       listConfig: getNextAccount(),
       wallet: getNextAccount(),
       walletEntry: getNextAccount(),

@@ -16,7 +16,7 @@ import {
 
 export type WalletEntrySeeds = {
   listConfig: Address;
-  walletAddress: Address;
+  wallet: Address;
 };
 
 export async function findWalletEntryPda(
@@ -31,7 +31,7 @@ export async function findWalletEntryPda(
     seeds: [
       getUtf8Encoder().encode('wallet_entry'),
       getAddressEncoder().encode(seeds.listConfig),
-      getAddressEncoder().encode(seeds.walletAddress),
+      getAddressEncoder().encode(seeds.wallet),
     ],
   });
 }
