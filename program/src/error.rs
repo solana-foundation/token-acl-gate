@@ -7,16 +7,18 @@ pub enum ABLError {
     AccountBlocked,
     NotEnoughAccounts,
     InvalidAccountData,
-    UninitializedAccount,
     InvalidSystemProgram,
+    InvalidGatingProgram,
     InvalidConfigAccount,
     AccountNotWritable,
-    InvalidMint,
     InvalidExtraMetasAccount,
     ImmutableOwnerExtensionMissing,
     InvalidData,
     InvalidTokenAclMintConfig,
     ListNotEmpty,
+    InvalidRemainingAccounts,
+    InvalidWalletEntry,
+    InvalidListConfig,
 }
 
 impl From<ABLError> for ProgramError {

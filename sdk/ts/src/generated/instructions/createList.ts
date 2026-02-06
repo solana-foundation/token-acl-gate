@@ -25,6 +25,7 @@ import {
   type InstructionWithAccounts,
   type InstructionWithData,
   type ReadonlyAccount,
+  type ReadonlySignerAccount,
   type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
@@ -48,6 +49,7 @@ export function getCreateListDiscriminatorBytes() {
 export type CreateListInstruction<
   TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountAuthority extends string | AccountMeta<string> = string,
+  TAccountPayer extends string | AccountMeta<string> = string,
   TAccountListConfig extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
@@ -58,9 +60,13 @@ export type CreateListInstruction<
   InstructionWithAccounts<
     [
       TAccountAuthority extends string
-        ? WritableSignerAccount<TAccountAuthority> &
+        ? ReadonlySignerAccount<TAccountAuthority> &
             AccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
+      TAccountPayer extends string
+        ? WritableSignerAccount<TAccountPayer> &
+            AccountSignerMeta<TAccountPayer>
+        : TAccountPayer,
       TAccountListConfig extends string
         ? WritableAccount<TAccountListConfig>
         : TAccountListConfig,
@@ -110,10 +116,12 @@ export function getCreateListInstructionDataCodec(): FixedSizeCodec<
 
 export type CreateListInput<
   TAccountAuthority extends string = string,
+  TAccountPayer extends string = string,
   TAccountListConfig extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
+  payer: TransactionSigner<TAccountPayer>;
   listConfig: Address<TAccountListConfig>;
   systemProgram?: Address<TAccountSystemProgram>;
   mode: CreateListInstructionDataArgs['mode'];
@@ -122,6 +130,7 @@ export type CreateListInput<
 
 export function getCreateListInstruction<
   TAccountAuthority extends string,
+  TAccountPayer extends string,
   TAccountListConfig extends string,
   TAccountSystemProgram extends string,
   TProgramAddress extends
@@ -129,6 +138,7 @@ export function getCreateListInstruction<
 >(
   input: CreateListInput<
     TAccountAuthority,
+    TAccountPayer,
     TAccountListConfig,
     TAccountSystemProgram
   >,
@@ -136,6 +146,7 @@ export function getCreateListInstruction<
 ): CreateListInstruction<
   TProgramAddress,
   TAccountAuthority,
+  TAccountPayer,
   TAccountListConfig,
   TAccountSystemProgram
 > {
@@ -145,7 +156,8 @@ export function getCreateListInstruction<
 
   // Original accounts.
   const originalAccounts = {
-    authority: { value: input.authority ?? null, isWritable: true },
+    authority: { value: input.authority ?? null, isWritable: false },
+    payer: { value: input.payer ?? null, isWritable: true },
     listConfig: { value: input.listConfig ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
@@ -167,6 +179,7 @@ export function getCreateListInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.payer),
       getAccountMeta(accounts.listConfig),
       getAccountMeta(accounts.systemProgram),
     ],
@@ -177,6 +190,7 @@ export function getCreateListInstruction<
   } as CreateListInstruction<
     TProgramAddress,
     TAccountAuthority,
+    TAccountPayer,
     TAccountListConfig,
     TAccountSystemProgram
   >);
@@ -189,8 +203,9 @@ export type ParsedCreateListInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     authority: TAccountMetas[0];
-    listConfig: TAccountMetas[1];
-    systemProgram: TAccountMetas[2];
+    payer: TAccountMetas[1];
+    listConfig: TAccountMetas[2];
+    systemProgram: TAccountMetas[3];
   };
   data: CreateListInstructionData;
 };
@@ -203,7 +218,7 @@ export function parseCreateListInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedCreateListInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 3) {
+  if (instruction.accounts.length < 4) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -217,6 +232,7 @@ export function parseCreateListInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       authority: getNextAccount(),
+      payer: getNextAccount(),
       listConfig: getNextAccount(),
       systemProgram: getNextAccount(),
     },

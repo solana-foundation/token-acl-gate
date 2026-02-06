@@ -1,11 +1,16 @@
 pub mod program_test;
+use solana_instruction::AccountMeta;
+use solana_keypair::Keypair;
+use solana_pubkey::Pubkey;
+use solana_sdk::{
+    instruction::InstructionError,
+    signer::Signer,
+    transaction::{Transaction, TransactionError},
+};
 use token_acl_gate_client::{
     accounts::{ListConfig, WalletEntry},
     types::Mode,
 };
-use solana_instruction::AccountMeta;
-use solana_pubkey::Pubkey;
-use solana_sdk::{signer::Signer, transaction::Transaction};
 
 use crate::program_test::TestContext;
 
@@ -19,6 +24,7 @@ async fn creates_list() {
 
     let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
         .authority(context.auth.pubkey())
+        .payer(context.auth.pubkey())
         .list_config(list_config_address)
         .mode(Mode::Allow)
         .seed(seed)
@@ -40,6 +46,41 @@ async fn creates_list() {
     assert_eq!(config.seed, seed);
     assert_eq!(config.mode, Mode::Allow as u8);
     assert_eq!(config.wallets_count, 0);
+}
+
+#[tokio::test]
+async fn fails_to_creates_list_with_non_pda_list() {
+    let mut context = TestContext::new();
+
+    let seed = Pubkey::new_unique();
+    let (_list_config_address, _) =
+        token_acl_gate_client::accounts::ListConfig::find_pda(&context.auth.pubkey(), &seed);
+
+        let list_cfg_kp = Keypair::new();
+        context.vm.airdrop(&list_cfg_kp.pubkey(), 1_000_000_000).unwrap();
+
+    let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
+        .authority(context.auth.pubkey())
+        .payer(context.auth.pubkey())
+        .list_config(list_cfg_kp.pubkey())
+        .mode(Mode::Allow)
+        .seed(seed)
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&list_cfg_kp.pubkey()),
+        &[context.auth.insecure_clone(), list_cfg_kp.insecure_clone()],
+        context.vm.latest_blockhash(),
+    );
+    let res = context.vm.send_transaction(tx);
+    assert!(res.is_err());
+
+    let err = res.err().unwrap();
+    assert_eq!(
+        err.err,
+        TransactionError::InstructionError(0, InstructionError::Custom(16))
+    );
 }
 
 #[tokio::test]
@@ -90,6 +131,40 @@ async fn deletes_list() {
 }
 
 #[tokio::test]
+async fn fails_to_delete_list_with_invalid_authority() {
+    let mut context = TestContext::new();
+
+    let list_config_address = context.create_list(Mode::Allow);
+    let invalid_authority = Keypair::new();
+    let invalid_authority_pubkey = invalid_authority.pubkey();
+
+    let ix = token_acl_gate_client::instructions::DeleteListBuilder::new()
+        .authority(invalid_authority_pubkey)
+        .list_config(list_config_address)
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.auth.pubkey()),
+        &[
+            context.auth.insecure_clone(),
+            invalid_authority.insecure_clone(),
+        ],
+        context.vm.latest_blockhash(),
+    );
+
+    let res = context.vm.send_transaction(tx);
+    println!("res: {:?}", res);
+    assert!(res.is_err());
+
+    let err = res.err().unwrap();
+    assert_eq!(
+        err.err,
+        TransactionError::InstructionError(0, InstructionError::Custom(1))
+    );
+}
+
+#[tokio::test]
 async fn adds_wallet() {
     let mut context = TestContext::new();
 
@@ -102,6 +177,7 @@ async fn adds_wallet() {
 
     let ix = token_acl_gate_client::instructions::AddWalletBuilder::new()
         .authority(context.auth.pubkey())
+        .payer(context.auth.pubkey())
         .list_config(list_config_address)
         .wallet(wallet_address)
         .wallet_entry(wallet_entry)
@@ -178,6 +254,7 @@ async fn setup_list_extra_metas() {
 
     let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
         .authority(context.token.auth.pubkey())
+        .payer(context.token.auth.pubkey())
         .mint(context.token.mint)
         .extra_metas(extra_metas)
         .token_acl_mint_config(mint_config)
@@ -228,7 +305,9 @@ async fn setup_list_extra_metas() {
     assert_eq!(rev_iter.next().unwrap().pubkey, wallet_entry);
     assert_eq!(rev_iter.next().unwrap().pubkey, list_config_address);
     assert_eq!(rev_iter.next().unwrap().pubkey, extra_metas);
-    assert!(rev_iter.any(|account| account.pubkey == token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID));
+    assert!(rev_iter.any(
+        |account| account.pubkey == token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID
+    ));
 }
 
 #[tokio::test]
@@ -248,6 +327,7 @@ async fn setup_list_extra_metas_with_multiple_lists() {
 
     let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
         .authority(context.token.auth.pubkey())
+        .payer(context.token.auth.pubkey())
         .mint(context.token.mint)
         .extra_metas(extra_metas)
         .token_acl_mint_config(mint_config)
@@ -349,4 +429,89 @@ async fn setup_list_extra_metas_multiple_times() {
     ]);
     let _res = context.setup_extra_metas(&[list_config_address, list_config_address_2]);
     let _res = context.setup_extra_metas(&[]);
+}
+
+#[tokio::test]
+async fn fails_to_setup_list_extra_metas_with_invalid_gating_program() {
+    let mut context = TestContext::new();
+
+    let (mint_cfg_pk, _) = token_acl_client::accounts::MintConfig::find_pda(&context.token.mint);
+
+    let ix1 = token_acl_client::instructions::CreateConfigBuilder::new()
+        .authority(context.token.auth.pubkey())
+        // random invalid program id
+        .gating_program(spl_token_2022::ID)
+        .mint(context.token.mint)
+        .mint_config(mint_cfg_pk)
+        .payer(context.token.auth.pubkey())
+        .system_program(solana_system_interface::program::ID)
+        .token_program(spl_token_2022::ID)
+        .instruction();
+
+    let list_config_address = context.create_list(Mode::Allow);
+
+    let extra_metas = token_acl_interface::get_thaw_extra_account_metas_address(
+        &context.token.mint,
+        &token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID,
+    );
+
+    let ix2 = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
+        .authority(context.token.auth.pubkey())
+        .payer(context.token.auth.pubkey())
+        .mint(context.token.mint)
+        .extra_metas(extra_metas)
+        .token_acl_mint_config(mint_cfg_pk)
+        .add_remaining_account(AccountMeta::new_readonly(list_config_address, false))
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix1, ix2],
+        Some(&context.token.auth.pubkey()),
+        &[context.token.auth.insecure_clone()],
+        context.vm.latest_blockhash(),
+    );
+
+    let res = context.vm.send_transaction(tx);
+    println!("res: {:?}", res);
+    assert!(res.is_err());
+
+    let err = res.err().unwrap();
+    assert_eq!(
+        err.err,
+        TransactionError::InstructionError(1, InstructionError::Custom(6))
+    );
+}
+
+#[tokio::test]
+async fn fails_to_removes_wallet_from_invalid_list() {
+    let mut context = TestContext::new();
+
+    let wallet_address = Pubkey::new_unique();
+    let list_config_address = context.create_list(Mode::Allow);
+    let list_config_address_2 = context.create_list(Mode::Block);
+    let wallet_entry = context.add_wallet_to_list(&list_config_address, &wallet_address);
+
+    let ix = token_acl_gate_client::instructions::RemoveWalletBuilder::new()
+        .authority(context.auth.pubkey())
+        .list_config(list_config_address_2)
+        .wallet_entry(wallet_entry)
+        .instruction();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[ix],
+        Some(&context.auth.pubkey()),
+        &[context.auth.insecure_clone()],
+        context.vm.latest_blockhash(),
+    );
+
+    let res = context.vm.send_transaction(tx);
+    assert!(res.is_err());
+
+    println!("res: {:?}", res);
+    // err 14
+    let err = res.err().unwrap();
+    assert_eq!(
+        err.err,
+        TransactionError::InstructionError(0, InstructionError::Custom(15))
+    );
 }

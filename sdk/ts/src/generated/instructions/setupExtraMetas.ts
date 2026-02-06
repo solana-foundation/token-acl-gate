@@ -28,6 +28,7 @@ import {
   type ReadonlyUint8Array,
   type TransactionSigner,
   type WritableAccount,
+  type WritableSignerAccount,
 } from '@solana/kit';
 import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
@@ -41,6 +42,7 @@ export function getSetupExtraMetasDiscriminatorBytes() {
 export type SetupExtraMetasInstruction<
   TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountAuthority extends string | AccountMeta<string> = string,
+  TAccountPayer extends string | AccountMeta<string> = string,
   TAccountTokenAclMintConfig extends string | AccountMeta<string> = string,
   TAccountMint extends string | AccountMeta<string> = string,
   TAccountExtraMetas extends string | AccountMeta<string> = string,
@@ -56,6 +58,10 @@ export type SetupExtraMetasInstruction<
         ? ReadonlySignerAccount<TAccountAuthority> &
             AccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
+      TAccountPayer extends string
+        ? WritableSignerAccount<TAccountPayer> &
+            AccountSignerMeta<TAccountPayer>
+        : TAccountPayer,
       TAccountTokenAclMintConfig extends string
         ? ReadonlyAccount<TAccountTokenAclMintConfig>
         : TAccountTokenAclMintConfig,
@@ -99,12 +105,14 @@ export function getSetupExtraMetasInstructionDataCodec(): FixedSizeCodec<
 
 export type SetupExtraMetasInput<
   TAccountAuthority extends string = string,
+  TAccountPayer extends string = string,
   TAccountTokenAclMintConfig extends string = string,
   TAccountMint extends string = string,
   TAccountExtraMetas extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
+  payer: TransactionSigner<TAccountPayer>;
   tokenAclMintConfig: Address<TAccountTokenAclMintConfig>;
   mint: Address<TAccountMint>;
   extraMetas: Address<TAccountExtraMetas>;
@@ -114,6 +122,7 @@ export type SetupExtraMetasInput<
 
 export function getSetupExtraMetasInstruction<
   TAccountAuthority extends string,
+  TAccountPayer extends string,
   TAccountTokenAclMintConfig extends string,
   TAccountMint extends string,
   TAccountExtraMetas extends string,
@@ -123,6 +132,7 @@ export function getSetupExtraMetasInstruction<
 >(
   input: SetupExtraMetasInput<
     TAccountAuthority,
+    TAccountPayer,
     TAccountTokenAclMintConfig,
     TAccountMint,
     TAccountExtraMetas,
@@ -132,6 +142,7 @@ export function getSetupExtraMetasInstruction<
 ): SetupExtraMetasInstruction<
   TProgramAddress,
   TAccountAuthority,
+  TAccountPayer,
   TAccountTokenAclMintConfig,
   TAccountMint,
   TAccountExtraMetas,
@@ -144,6 +155,7 @@ export function getSetupExtraMetasInstruction<
   // Original accounts.
   const originalAccounts = {
     authority: { value: input.authority ?? null, isWritable: false },
+    payer: { value: input.payer ?? null, isWritable: true },
     tokenAclMintConfig: {
       value: input.tokenAclMintConfig ?? null,
       isWritable: false,
@@ -176,6 +188,7 @@ export function getSetupExtraMetasInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.payer),
       getAccountMeta(accounts.tokenAclMintConfig),
       getAccountMeta(accounts.mint),
       getAccountMeta(accounts.extraMetas),
@@ -187,6 +200,7 @@ export function getSetupExtraMetasInstruction<
   } as SetupExtraMetasInstruction<
     TProgramAddress,
     TAccountAuthority,
+    TAccountPayer,
     TAccountTokenAclMintConfig,
     TAccountMint,
     TAccountExtraMetas,
@@ -201,10 +215,11 @@ export type ParsedSetupExtraMetasInstruction<
   programAddress: Address<TProgram>;
   accounts: {
     authority: TAccountMetas[0];
-    tokenAclMintConfig: TAccountMetas[1];
-    mint: TAccountMetas[2];
-    extraMetas: TAccountMetas[3];
-    systemProgram: TAccountMetas[4];
+    payer: TAccountMetas[1];
+    tokenAclMintConfig: TAccountMetas[2];
+    mint: TAccountMetas[3];
+    extraMetas: TAccountMetas[4];
+    systemProgram: TAccountMetas[5];
   };
   data: SetupExtraMetasInstructionData;
 };
@@ -217,7 +232,7 @@ export function parseSetupExtraMetasInstruction<
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
 ): ParsedSetupExtraMetasInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 5) {
+  if (instruction.accounts.length < 6) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -231,6 +246,7 @@ export function parseSetupExtraMetasInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       authority: getNextAccount(),
+      payer: getNextAccount(),
       tokenAclMintConfig: getNextAccount(),
       mint: getNextAccount(),
       extraMetas: getNextAccount(),

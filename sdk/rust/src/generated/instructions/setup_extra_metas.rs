@@ -15,6 +15,8 @@ pub const SETUP_EXTRA_METAS_DISCRIMINATOR: u8 = 4;
 pub struct SetupExtraMetas {
     pub authority: solana_pubkey::Pubkey,
 
+    pub payer: solana_pubkey::Pubkey,
+
     pub token_acl_mint_config: solana_pubkey::Pubkey,
 
     pub mint: solana_pubkey::Pubkey,
@@ -34,11 +36,12 @@ impl SetupExtraMetas {
         &self,
         remaining_accounts: &[solana_instruction::AccountMeta],
     ) -> solana_instruction::Instruction {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.authority,
             true,
         ));
+        accounts.push(solana_instruction::AccountMeta::new(self.payer, true));
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.token_acl_mint_config,
             false,
@@ -92,13 +95,15 @@ impl Default for SetupExtraMetasInstructionData {
 /// ### Accounts:
 ///
 ///   0. `[signer]` authority
-///   1. `[]` token_acl_mint_config
-///   2. `[]` mint
-///   3. `[writable]` extra_metas
-///   4. `[optional]` system_program (default to `11111111111111111111111111111111`)
+///   1. `[writable, signer]` payer
+///   2. `[]` token_acl_mint_config
+///   3. `[]` mint
+///   4. `[writable]` extra_metas
+///   5. `[optional]` system_program (default to `11111111111111111111111111111111`)
 #[derive(Clone, Debug, Default)]
 pub struct SetupExtraMetasBuilder {
     authority: Option<solana_pubkey::Pubkey>,
+    payer: Option<solana_pubkey::Pubkey>,
     token_acl_mint_config: Option<solana_pubkey::Pubkey>,
     mint: Option<solana_pubkey::Pubkey>,
     extra_metas: Option<solana_pubkey::Pubkey>,
@@ -113,6 +118,11 @@ impl SetupExtraMetasBuilder {
     #[inline(always)]
     pub fn authority(&mut self, authority: solana_pubkey::Pubkey) -> &mut Self {
         self.authority = Some(authority);
+        self
+    }
+    #[inline(always)]
+    pub fn payer(&mut self, payer: solana_pubkey::Pubkey) -> &mut Self {
+        self.payer = Some(payer);
         self
     }
     #[inline(always)]
@@ -158,6 +168,7 @@ impl SetupExtraMetasBuilder {
     pub fn instruction(&self) -> solana_instruction::Instruction {
         let accounts = SetupExtraMetas {
             authority: self.authority.expect("authority is not set"),
+            payer: self.payer.expect("payer is not set"),
             token_acl_mint_config: self
                 .token_acl_mint_config
                 .expect("token_acl_mint_config is not set"),
@@ -176,6 +187,8 @@ impl SetupExtraMetasBuilder {
 pub struct SetupExtraMetasCpiAccounts<'a, 'b> {
     pub authority: &'b solana_account_info::AccountInfo<'a>,
 
+    pub payer: &'b solana_account_info::AccountInfo<'a>,
+
     pub token_acl_mint_config: &'b solana_account_info::AccountInfo<'a>,
 
     pub mint: &'b solana_account_info::AccountInfo<'a>,
@@ -191,6 +204,8 @@ pub struct SetupExtraMetasCpi<'a, 'b> {
     pub __program: &'b solana_account_info::AccountInfo<'a>,
 
     pub authority: &'b solana_account_info::AccountInfo<'a>,
+
+    pub payer: &'b solana_account_info::AccountInfo<'a>,
 
     pub token_acl_mint_config: &'b solana_account_info::AccountInfo<'a>,
 
@@ -209,6 +224,7 @@ impl<'a, 'b> SetupExtraMetasCpi<'a, 'b> {
         Self {
             __program: program,
             authority: accounts.authority,
+            payer: accounts.payer,
             token_acl_mint_config: accounts.token_acl_mint_config,
             mint: accounts.mint,
             extra_metas: accounts.extra_metas,
@@ -238,11 +254,12 @@ impl<'a, 'b> SetupExtraMetasCpi<'a, 'b> {
         signers_seeds: &[&[&[u8]]],
         remaining_accounts: &[(&'b solana_account_info::AccountInfo<'a>, bool, bool)],
     ) -> solana_program_error::ProgramResult {
-        let mut accounts = Vec::with_capacity(5 + remaining_accounts.len());
+        let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.authority.key,
             true,
         ));
+        accounts.push(solana_instruction::AccountMeta::new(*self.payer.key, true));
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.token_acl_mint_config.key,
             false,
@@ -273,9 +290,10 @@ impl<'a, 'b> SetupExtraMetasCpi<'a, 'b> {
             accounts,
             data,
         };
-        let mut account_infos = Vec::with_capacity(6 + remaining_accounts.len());
+        let mut account_infos = Vec::with_capacity(7 + remaining_accounts.len());
         account_infos.push(self.__program.clone());
         account_infos.push(self.authority.clone());
+        account_infos.push(self.payer.clone());
         account_infos.push(self.token_acl_mint_config.clone());
         account_infos.push(self.mint.clone());
         account_infos.push(self.extra_metas.clone());
@@ -297,10 +315,11 @@ impl<'a, 'b> SetupExtraMetasCpi<'a, 'b> {
 /// ### Accounts:
 ///
 ///   0. `[signer]` authority
-///   1. `[]` token_acl_mint_config
-///   2. `[]` mint
-///   3. `[writable]` extra_metas
-///   4. `[]` system_program
+///   1. `[writable, signer]` payer
+///   2. `[]` token_acl_mint_config
+///   3. `[]` mint
+///   4. `[writable]` extra_metas
+///   5. `[]` system_program
 #[derive(Clone, Debug)]
 pub struct SetupExtraMetasCpiBuilder<'a, 'b> {
     instruction: Box<SetupExtraMetasCpiBuilderInstruction<'a, 'b>>,
@@ -311,6 +330,7 @@ impl<'a, 'b> SetupExtraMetasCpiBuilder<'a, 'b> {
         let instruction = Box::new(SetupExtraMetasCpiBuilderInstruction {
             __program: program,
             authority: None,
+            payer: None,
             token_acl_mint_config: None,
             mint: None,
             extra_metas: None,
@@ -322,6 +342,11 @@ impl<'a, 'b> SetupExtraMetasCpiBuilder<'a, 'b> {
     #[inline(always)]
     pub fn authority(&mut self, authority: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
         self.instruction.authority = Some(authority);
+        self
+    }
+    #[inline(always)]
+    pub fn payer(&mut self, payer: &'b solana_account_info::AccountInfo<'a>) -> &mut Self {
+        self.instruction.payer = Some(payer);
         self
     }
     #[inline(always)]
@@ -392,6 +417,8 @@ impl<'a, 'b> SetupExtraMetasCpiBuilder<'a, 'b> {
 
             authority: self.instruction.authority.expect("authority is not set"),
 
+            payer: self.instruction.payer.expect("payer is not set"),
+
             token_acl_mint_config: self
                 .instruction
                 .token_acl_mint_config
@@ -420,6 +447,7 @@ impl<'a, 'b> SetupExtraMetasCpiBuilder<'a, 'b> {
 struct SetupExtraMetasCpiBuilderInstruction<'a, 'b> {
     __program: &'b solana_account_info::AccountInfo<'a>,
     authority: Option<&'b solana_account_info::AccountInfo<'a>>,
+    payer: Option<&'b solana_account_info::AccountInfo<'a>>,
     token_acl_mint_config: Option<&'b solana_account_info::AccountInfo<'a>>,
     mint: Option<&'b solana_account_info::AccountInfo<'a>>,
     extra_metas: Option<&'b solana_account_info::AccountInfo<'a>>,
