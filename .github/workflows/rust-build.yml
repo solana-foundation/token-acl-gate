@@ -1,0 +1,37 @@
+name: Rust Checks
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+
+jobs:
+  build:
+    name: Run Rust checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Install Dependencies
+        uses: ./.github/workflows/actions/install-dependencies
+        with:
+          solana_version: "2.3.13"
+          install-rust: true
+
+      - name: Build Token-ACL-gate program
+        run: pnpm run build:program
+
+      - name: Build CLI
+        run : pnpm run build:cli
+
+      - name: Copy test artifacts to test fixtures
+        run: pnpm run copy:test:fixtures
+
+      - name: Run integration tests
+        run: pnpm run test

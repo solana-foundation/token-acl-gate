@@ -1,6 +1,6 @@
 [package]
 name = "token-acl-gate-client"
-version = "0.1.0"
+version = { workspace = true }
 description = "A rust library for the Token ACL Gate program with generated client code."
 repository = { workspace = true }
 license = { workspace = true }
@@ -9,9 +9,6 @@ edition = { workspace = true }
 [lib]
 name = "token_acl_gate_client"
 
-[features]
-default = []
-
 [dependencies]
 solana-program = { workspace = true }
 solana-pubkey = { workspace = true }
@@ -19,6 +16,7 @@ solana-account-info = { workspace = true }
 solana-instruction = { workspace = true }
 solana-program-error = { workspace = true }
 solana-cpi = { workspace = true }
+solana-client = { workspace = true, optional = true }
 kaigan = ">=0.2.6"
 borsh = "^0.10"
 num-derive = "0.4.2"
@@ -47,3 +45,10 @@ borsh = "^0.10"
 token-acl-interface = { workspace = true }
 token-acl = { workspace = true }
 token-acl-client = { workspace = true }
+
+
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = [
+    'cfg(feature, values("anchor", "anchor-idl-build", "serde", "fetch"))',
+]

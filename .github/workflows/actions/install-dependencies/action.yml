@@ -1,0 +1,64 @@
+name: Install Dependencies
+description: Sets up pnpm, Node.js, and installs workspace dependencies
+
+inputs:
+  version:
+    description: Node.js version to install
+    default: 'lts/*'
+    type: string
+  purge:
+    description: Purge unused directories if `true`. Defaults to `false`.
+    required: false
+  rust-components:
+    description: "Rust components to install (comma-separated)"
+    required: false
+    default: ""
+  install-rust:
+    description: "Install Rust if `true`. Defaults to `false`."
+    required: false
+    default: false
+  solana_version:
+    description: "Solana version to install (leave empty to skip)"
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.20.0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.version }}
+        cache: pnpm
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    - name: Set Rust version
+      shell: bash
+      run: |
+        echo "RUST_VERSION=1.91.1" >> $GITHUB_ENV
+
+    - name: Setup Rust toolchain
+      if: inputs.install-rust == 'true'
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+
+    - name: Setup Solana version environment variable
+      if: inputs.solana_version != ''
+      shell: bash
+      run: |
+        echo "SOLANA_VERSION=${{ inputs.solana_version }}" >> $GITHUB_ENV
+
+    - name: Install Solana
+      if: inputs.solana_version != ''
+      uses: solana-developers/github-actions/setup-all@v0.2.7
+      with:
+        solana_version: ${{ inputs.solana_version }}

@@ -11,7 +11,8 @@
     "build:program": "cargo build-sbf --manifest-path=program/Cargo.toml",
     "test": "cargo test-sbf --manifest-path=sdk/rust/Cargo.toml",
     "build:cli": "cargo build --manifest-path=cli/Cargo.toml",
-    "generate-sdks": "pnpx tsx codama.ts"
+    "generate-sdks": "pnpx tsx codama.ts",
+    "copy:test:fixtures": "cp target/deploy/token_acl_gate_program.so sdk/rust/tests/fixtures/"
   },
   "dependencies": {
     "@codama/renderers": "^1.0.34",

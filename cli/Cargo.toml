@@ -1,6 +1,6 @@
 [package]
 name = "token-acl-gate-cli"
-version = "0.1.0"
+version = { workspace = true }
 description = "A CLI app to interact with the Token ACL Gate smart contract on solana!"
 repository = { workspace = true }
 license = { workspace = true }
