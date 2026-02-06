@@ -29,8 +29,13 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from '@solana/kit';
+import { findWalletEntryPda } from '../pdas';
 import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  expectAddress,
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared';
 
 export const ADD_WALLET_DISCRIMINATOR = 2;
 
@@ -100,6 +105,105 @@ export function getAddWalletInstructionDataCodec(): FixedSizeCodec<
     getAddWalletInstructionDataEncoder(),
     getAddWalletInstructionDataDecoder()
   );
+}
+
+export type AddWalletAsyncInput<
+  TAccountAuthority extends string = string,
+  TAccountPayer extends string = string,
+  TAccountListConfig extends string = string,
+  TAccountWallet extends string = string,
+  TAccountWalletEntry extends string = string,
+  TAccountSystemProgram extends string = string,
+> = {
+  authority: TransactionSigner<TAccountAuthority>;
+  payer: TransactionSigner<TAccountPayer>;
+  listConfig: Address<TAccountListConfig>;
+  wallet: Address<TAccountWallet>;
+  walletEntry?: Address<TAccountWalletEntry>;
+  systemProgram?: Address<TAccountSystemProgram>;
+};
+
+export async function getAddWalletInstructionAsync<
+  TAccountAuthority extends string,
+  TAccountPayer extends string,
+  TAccountListConfig extends string,
+  TAccountWallet extends string,
+  TAccountWalletEntry extends string,
+  TAccountSystemProgram extends string,
+  TProgramAddress extends
+    Address = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
+>(
+  input: AddWalletAsyncInput<
+    TAccountAuthority,
+    TAccountPayer,
+    TAccountListConfig,
+    TAccountWallet,
+    TAccountWalletEntry,
+    TAccountSystemProgram
+  >,
+  config?: { programAddress?: TProgramAddress }
+): Promise<
+  AddWalletInstruction<
+    TProgramAddress,
+    TAccountAuthority,
+    TAccountPayer,
+    TAccountListConfig,
+    TAccountWallet,
+    TAccountWalletEntry,
+    TAccountSystemProgram
+  >
+> {
+  // Program address.
+  const programAddress =
+    config?.programAddress ?? TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS;
+
+  // Original accounts.
+  const originalAccounts = {
+    authority: { value: input.authority ?? null, isWritable: false },
+    payer: { value: input.payer ?? null, isWritable: true },
+    listConfig: { value: input.listConfig ?? null, isWritable: true },
+    wallet: { value: input.wallet ?? null, isWritable: false },
+    walletEntry: { value: input.walletEntry ?? null, isWritable: true },
+    systemProgram: { value: input.systemProgram ?? null, isWritable: false },
+  };
+  const accounts = originalAccounts as Record<
+    keyof typeof originalAccounts,
+    ResolvedAccount
+  >;
+
+  // Resolve default values.
+  if (!accounts.walletEntry.value) {
+    accounts.walletEntry.value = await findWalletEntryPda({
+      listConfig: expectAddress(accounts.listConfig.value),
+      wallet: expectAddress(accounts.wallet.value),
+    });
+  }
+  if (!accounts.systemProgram.value) {
+    accounts.systemProgram.value =
+      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
+  }
+
+  const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
+  return Object.freeze({
+    accounts: [
+      getAccountMeta(accounts.authority),
+      getAccountMeta(accounts.payer),
+      getAccountMeta(accounts.listConfig),
+      getAccountMeta(accounts.wallet),
+      getAccountMeta(accounts.walletEntry),
+      getAccountMeta(accounts.systemProgram),
+    ],
+    data: getAddWalletInstructionDataEncoder().encode({}),
+    programAddress,
+  } as AddWalletInstruction<
+    TProgramAddress,
+    TAccountAuthority,
+    TAccountPayer,
+    TAccountListConfig,
+    TAccountWallet,
+    TAccountWalletEntry,
+    TAccountSystemProgram
+  >);
 }
 
 export type AddWalletInput<
