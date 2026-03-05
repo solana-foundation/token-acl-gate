@@ -14,9 +14,6 @@ on:
         default: true
         type: boolean
 
-permissions:
-  contents: write
-
 concurrency:
   group: release-rust
   cancel-in-progress: false
@@ -27,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
+      contents: write
       id-token: write
     steps:
       - name: Checkout
@@ -38,7 +36,7 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/workflows/actions/install-dependencies
         with:
-          solana_version: "3.0.14"
+          solana_version: "2.3.13"
           rust-components: "rustfmt, clippy"
           install-rust: true
 
