@@ -49,6 +49,7 @@ runs:
       if: inputs.install-rust == 'true'
       uses: dtolnay/rust-toolchain@master
       with:
+        components: ${{ inputs.rust-components }}
         toolchain: ${{ env.RUST_VERSION }}
 
     - name: Setup Solana version environment variable

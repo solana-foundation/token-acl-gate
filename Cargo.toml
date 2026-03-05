@@ -6,10 +6,10 @@ resolver = "2"
 repository = "https://github.com/solana-foundation/token-acl-gate"
 license = "MIT"
 edition = "2021"
-version = "0.1.0"
+version = "0.2.0"
 
 [workspace.dependencies]
-token-acl-gate-client = { path = "sdk/rust", version = "0.1.0" }
+token-acl-gate-client = { path = "sdk/rust", version = "0.2.0" }
 solana-account-info = "2.3.0"
 solana-cpi = "2.2.1"
 solana-decode-error = "2.3.0"
