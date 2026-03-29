@@ -17,8 +17,8 @@ pinocchio = "0.9.0"
 pinocchio-pubkey = "0.3.0"
 pinocchio-system = "0.3.0"
 pinocchio-log = "0.5.0"
-spl-discriminator = "0.4.0"
-spl-tlv-account-resolution = "0.10.0"
+spl-discriminator = "0.5.0"
+spl-tlv-account-resolution = "0.11.1"
 
 token-acl-interface = { workspace = true }
 token-acl = { workspace = true, features = [

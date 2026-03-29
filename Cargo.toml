@@ -10,34 +10,30 @@ version = "0.2.0"
 
 [workspace.dependencies]
 token-acl-gate-client = { path = "sdk/rust", version = "0.2.0" }
-solana-account-info = "2.3.0"
-solana-cpi = "2.2.1"
-solana-decode-error = "2.3.0"
-solana-instruction = { version = "=2.3.3", features = ["std"] }
-solana-program-error = "2.2.2"
-solana-pubkey = { version = "2.3.0", features = ["curve25519", "borsh"] }
-solana-program-option = "2.2.1"
-solana-keypair = "2.2.3"
-solana-program = "2.3.0"
-solana-rent = "2.2.1"
-solana-system-interface = "1.0.0"
-solana-sysvar = "2.3.0"
-solana-msg = "2.2.1"
-solana-client = "2.3.13"
-solana-program-test = "2.3.13"
-solana-program-entrypoint = "2.3.0"
-solana-program-runtime = "2.3.13"
-solana-program-pack = "2.2.1"
-spl-discriminator = "0.4.0"
-spl-program-error = "0.7.0"
-spl-tlv-account-resolution = "0.10.0"
+solana-account-info = "^3"
+solana-cpi = "^3"
+solana-decode-error = "^2"
+solana-instruction = { version = "^3", features = ["std"] }
+solana-program-error = "^3"
+solana-pubkey = { version = "^3", features = ["borsh"] }
+solana-program-option = "^3"
+solana-message = "^3"
+solana-signature = "^3"
+solana-signer = "^3"
+spl-token-2022-interface = "^2"
+solana-commitment-config = "^3"
+solana-keypair = "^3"
+solana-system-interface = "^3"
+solana-msg = "^3"
+solana-client = "^3"
+solana-program-pack = "^3"
+spl-discriminator = "0.5.0"
+spl-tlv-account-resolution = "0.11.1"
 spl-type-length-value = "0.8.0"
 spl-pod = "0.5.1"
-spl-token-2022 = { version = "9.0.0", features = ["no-entrypoint"] }
-solana-sdk = "2.3.1"
-spl-associated-token-account-client = "2.0.0"
+spl-associated-token-account-interface = "^2.0"
 codama = "0.8.0"
 serde_json = "1"
-token-acl-interface = { version = "0.1.0" }
-token-acl-client = { version = "0.1.0" }
-token-acl = { version = "0.1.0", features = ["no-entrypoint",] }
+token-acl-interface = { version = "0.2.2" }
+token-acl-client = { version = "0.2.2" }
+token-acl = { version = "0.2.2", features = ["no-entrypoint",] }

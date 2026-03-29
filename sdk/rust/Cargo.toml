@@ -10,42 +10,30 @@ edition = { workspace = true }
 name = "token_acl_gate_client"
 
 [dependencies]
-solana-program = { workspace = true }
-solana-pubkey = { workspace = true }
 solana-account-info = { workspace = true }
-solana-instruction = { workspace = true }
 solana-program-error = { workspace = true }
+solana-instruction = { workspace = true }
+solana-pubkey = { version = "^3", features = ["curve25519", "borsh"] }
 solana-cpi = { workspace = true }
 solana-client = { workspace = true, optional = true }
-kaigan = ">=0.2.6"
-borsh = "^0.10"
 num-derive = "0.4.2"
 num-traits = "0.2.19"
+borsh = { version = "^1.0" }
 
 [dev-dependencies]
-litesvm = "0.7.1"
-solana-program-runtime = { workspace = true }
-solana-sdk = { workspace = true }
-spl-token-2022 = { workspace = true }
+litesvm = "^0.9"
+spl-associated-token-account-interface = "^2.0"
+spl-token-2022-interface = { workspace = true }
 solana-system-interface = { workspace = true }
-spl-associated-token-account-client  = { workspace = true }
 tokio = { version = "^1.20", features = ["rt-multi-thread", "macros"] }
-solana-compute-budget-interface = "2.2.1"
-solana-decode-error = { workspace = true }
-solana-msg = { workspace = true }
+solana-program-option = { workspace = true }
+solana-program-pack = { workspace = true }
 solana-keypair = { workspace = true }
-solana-program-entrypoint = { workspace = true }
-spl-discriminator = { workspace = true }
-spl-program-error = { workspace = true }
-spl-tlv-account-resolution = { workspace = true }
-spl-type-length-value = { workspace = true }
-spl-pod = { workspace = true }
-thiserror = "2.0"
-borsh = "^0.10"
+solana-signer = { workspace = true }
+solana-transaction = { version = "^3", features = ["serde"] }
 token-acl-interface = { workspace = true }
 token-acl = { workspace = true }
 token-acl-client = { workspace = true }
-
 
 [lints.rust.unexpected_cfgs]
 level = "warn"

@@ -1,5 +1,5 @@
 pub mod program_test;
-use solana_sdk::signer::Signer;
+use solana_keypair::Signer;
 use token_acl_gate_client::types::Mode;
 
 use crate::program_test::TestContext;

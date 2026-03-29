@@ -1,3 +1,10 @@
+use solana_commitment_config::CommitmentConfig;
+use solana_instruction::AccountMeta;
+use solana_keypair::{Keypair, Signer};
+use solana_pubkey::Pubkey;
+use solana_signature::Signature;
+use solana_transaction::Message;
+use solana_transaction::Transaction;
 use {
     clap::{crate_description, crate_name, crate_version, Arg, Command},
     solana_clap_v3_utils::{
@@ -10,14 +17,6 @@ use {
     },
     solana_client::nonblocking::rpc_client::RpcClient,
     solana_remote_wallet::remote_wallet::RemoteWalletManager,
-    solana_sdk::{
-        commitment_config::CommitmentConfig,
-        instruction::AccountMeta,
-        message::Message,
-        pubkey::Pubkey,
-        signature::{Keypair, Signature, Signer},
-        transaction::Transaction,
-    },
     std::{error::Error, process::exit, rc::Rc, sync::Arc},
 };
 

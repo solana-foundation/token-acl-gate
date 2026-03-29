@@ -72,7 +72,7 @@ This program serves as a gate program for the [Token ACL system](https://github.
 ## Development
 
 ### Prerequisites
-- Rust 1.70+
+- Rust 1.88+
 - Solana CLI 2.2.0+
 - Node.js 20.18.0+
 - pnpm 9.1.0+
