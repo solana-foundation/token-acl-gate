@@ -7,6 +7,10 @@ edition = "2021"
 crate-type = ["lib", "cdylib"]
 name = "token_acl_gate_program"
 
+[features]
+no-entrypoint = []
+idl = []
+
 [dependencies]
 bytemuck = "1.23.0"
 pinocchio = "0.9.0"
@@ -21,3 +25,8 @@ token-acl = { workspace = true, features = [
     "no-entrypoint",
 ] }
 solana-curve25519 = "2.2.1"
+codama = { workspace = true }
+
+[build-dependencies]
+codama = { workspace = true }
+serde_json = { workspace = true }
