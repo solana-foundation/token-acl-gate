@@ -28,8 +28,6 @@ pub struct WalletEntry {
 pub const WALLET_ENTRY_DISCRIMINATOR: u8 = 2;
 
 impl WalletEntry {
-    pub const LEN: usize = 65;
-
     /// Prefix values used to generate a PDA for this account.
     ///
     /// Values are positional and appear in the following order:

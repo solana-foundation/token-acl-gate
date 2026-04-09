@@ -56,8 +56,11 @@ async fn fails_to_creates_list_with_non_pda_list() {
     let (_list_config_address, _) =
         token_acl_gate_client::accounts::ListConfig::find_pda(&context.auth.pubkey(), &seed);
 
-        let list_cfg_kp = Keypair::new();
-        context.vm.airdrop(&list_cfg_kp.pubkey(), 1_000_000_000).unwrap();
+    let list_cfg_kp = Keypair::new();
+    context
+        .vm
+        .airdrop(&list_cfg_kp.pubkey(), 1_000_000_000)
+        .unwrap();
 
     let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
         .authority(context.auth.pubkey())

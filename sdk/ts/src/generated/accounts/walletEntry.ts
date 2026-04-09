@@ -45,7 +45,11 @@ export type WalletEntry = {
   listConfig: Address;
 };
 
-export type WalletEntryArgs = { walletAddress: Address; listConfig: Address };
+export type WalletEntryArgs = {
+  discriminator?: number;
+  walletAddress: Address;
+  listConfig: Address;
+};
 
 export function getWalletEntryEncoder(): FixedSizeEncoder<WalletEntryArgs> {
   return transformEncoder(
@@ -54,7 +58,10 @@ export function getWalletEntryEncoder(): FixedSizeEncoder<WalletEntryArgs> {
       ['walletAddress', getAddressEncoder()],
       ['listConfig', getAddressEncoder()],
     ]),
-    (value) => ({ ...value, discriminator: WALLET_ENTRY_DISCRIMINATOR })
+    (value) => ({
+      ...value,
+      discriminator: value.discriminator ?? WALLET_ENTRY_DISCRIMINATOR,
+    })
   );
 }
 
@@ -124,10 +131,6 @@ export async function fetchAllMaybeWalletEntry(
 ): Promise<MaybeAccount<WalletEntry>[]> {
   const maybeAccounts = await fetchEncodedAccounts(rpc, addresses, config);
   return maybeAccounts.map((maybeAccount) => decodeWalletEntry(maybeAccount));
-}
-
-export function getWalletEntrySize(): number {
-  return 65;
 }
 
 export async function fetchWalletEntryFromSeeds(

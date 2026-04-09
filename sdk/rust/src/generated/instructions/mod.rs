@@ -6,12 +6,14 @@
 //!
 
 pub(crate) mod r#add_wallet;
+pub(crate) mod r#can_thaw_permissionless;
 pub(crate) mod r#create_list;
 pub(crate) mod r#delete_list;
 pub(crate) mod r#remove_wallet;
 pub(crate) mod r#setup_extra_metas;
 
 pub use self::r#add_wallet::*;
+pub use self::r#can_thaw_permissionless::*;
 pub use self::r#create_list::*;
 pub use self::r#delete_list::*;
 pub use self::r#remove_wallet::*;

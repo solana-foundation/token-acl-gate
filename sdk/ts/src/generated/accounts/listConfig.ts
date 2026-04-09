@@ -50,6 +50,7 @@ export type ListConfig = {
 };
 
 export type ListConfigArgs = {
+  discriminator?: number;
   authority: Address;
   seed: Address;
   mode: number;
@@ -65,7 +66,10 @@ export function getListConfigEncoder(): FixedSizeEncoder<ListConfigArgs> {
       ['mode', getU8Encoder()],
       ['walletsCount', getU64Encoder()],
     ]),
-    (value) => ({ ...value, discriminator: LIST_CONFIG_DISCRIMINATOR })
+    (value) => ({
+      ...value,
+      discriminator: value.discriminator ?? LIST_CONFIG_DISCRIMINATOR,
+    })
   );
 }
 
@@ -137,10 +141,6 @@ export async function fetchAllMaybeListConfig(
 ): Promise<MaybeAccount<ListConfig>[]> {
   const maybeAccounts = await fetchEncodedAccounts(rpc, addresses, config);
   return maybeAccounts.map((maybeAccount) => decodeListConfig(maybeAccount));
-}
-
-export function getListConfigSize(): number {
-  return 74;
 }
 
 export async function fetchListConfigFromSeeds(

@@ -7,6 +7,7 @@
  */
 
 export * from './addWallet';
+export * from './canThawPermissionless';
 export * from './createList';
 export * from './deleteList';
 export * from './removeWallet';

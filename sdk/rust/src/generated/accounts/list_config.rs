@@ -30,8 +30,6 @@ pub struct ListConfig {
 pub const LIST_CONFIG_DISCRIMINATOR: u8 = 1;
 
 impl ListConfig {
-    pub const LEN: usize = 74;
-
     /// Prefix values used to generate a PDA for this account.
     ///
     /// Values are positional and appear in the following order:
