@@ -7,8 +7,10 @@
  */
 
 export * from './addWallet';
+export * from './canFreezePermissionless';
 export * from './canThawPermissionless';
 export * from './createList';
 export * from './deleteList';
 export * from './removeWallet';
 export * from './setupExtraMetas';
+export * from './setupFreezeExtraMetas';
