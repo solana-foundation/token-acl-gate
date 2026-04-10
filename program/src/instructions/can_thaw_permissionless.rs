@@ -1,15 +1,14 @@
-use pinocchio::{ProgramResult, account_info::AccountInfo, pubkey::Pubkey};
+use pinocchio::{account_info::AccountInfo, pubkey::Pubkey, ProgramResult};
 
 use crate::{load, ABLError, ListConfig, WalletEntry};
 
 use solana_curve25519::edwards::PodEdwardsPoint;
 
-
 /// SECURITY ASSUMPTIONS OVER CAN THAW PERMISSIONLESS EXECUTION
 ///
-/// 1- its called by the token-2022 program
+/// 1- it is called by the token-acl program
 /// 2- if some other program is calling it, we don't care as we don't write state here
-/// 2- its inputs are already sanitized by the token-2022 program
+/// 2- its inputs are already sanitized by the token-acl program
 /// 3- if some other program is calling it with invalid inputs, we don't care as we only read state and return ok/nok
 /// 4- given all the above we can skip a lot of type and owner checks
 pub struct CanThawPermissionless<'a> {
@@ -53,7 +52,6 @@ impl<'a> CanThawPermissionless<'a> {
         owner: &AccountInfo,
         wallet_entry: &AccountInfo,
     ) -> ProgramResult {
-
         if !list.is_owned_by(&crate::ID) {
             return Err(ABLError::InvalidListConfig.into());
         }
@@ -86,7 +84,7 @@ impl<'a> CanThawPermissionless<'a> {
                     let wallet = unsafe {
                         load::<WalletEntry>(ab_wallet_data).map_err(|_| ABLError::AccountBlocked)?
                     };
-                    
+
                     if !wallet_entry.is_owned_by(&crate::ID) || wallet.list_config.ne(list.key()) {
                         return Err(ABLError::InvalidWalletEntry.into());
                     }
@@ -100,7 +98,9 @@ impl<'a> CanThawPermissionless<'a> {
 
                 // either the block exists and is owned by this program
                 // or it doest exist. We want to avoid PDA derivation to waste more CUs
-                if !wallet_entry.is_owned_by(&Pubkey::default()) && !wallet_entry.is_owned_by(&crate::ID) {
+                if !wallet_entry.is_owned_by(&Pubkey::default())
+                    && !wallet_entry.is_owned_by(&crate::ID)
+                {
                     return Err(ABLError::InvalidWalletEntry.into());
                 }
 
