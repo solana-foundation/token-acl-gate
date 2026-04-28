@@ -7289,7 +7289,7 @@ dependencies = [
  "solana-instruction",
  "solana-keypair",
  "solana-logger",
- "solana-pubkey 4.1.0",
+ "solana-pubkey 3.0.0",
  "solana-remote-wallet",
  "solana-signature",
  "solana-transaction",

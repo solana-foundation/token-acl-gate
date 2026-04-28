@@ -8,19 +8,19 @@ edition = { workspace = true }
 
 [dependencies]
 clap = { version = "3", features = ["cargo"] }
-solana-clap-v3-utils = { version = "^3", features = ["agave-unstable-api"] }
-solana-cli-config = "^3"
-solana-client = "^3"
-solana-logger = "^3"
-solana-remote-wallet = "^3"
+solana-clap-v3-utils = { workspace = true }
+solana-cli-config = { workspace = true }
+solana-client = { workspace = true }
+solana-logger = { workspace = true }
+solana-remote-wallet = { workspace = true }
 tokio = { version = "1", features = ["full"] }
 token-acl-gate-client = { workspace = true }
 token-acl-client = { workspace = true }
 token-acl-interface = { workspace = true }
-solana-pubkey = { version = "^4", features = ["serde"] }
+solana-pubkey = { workspace = true, features = ["serde"] }
 solana-keypair = { workspace = true }
 solana-signature = { workspace = true }
-solana-transaction = { version = "^3", features = ["serde"] }
+solana-transaction = { workspace = true }
 solana-instruction = { workspace = true }
 solana-commitment-config = { workspace = true }
 
