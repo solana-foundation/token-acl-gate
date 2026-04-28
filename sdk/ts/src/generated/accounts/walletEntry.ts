@@ -133,6 +133,10 @@ export async function fetchAllMaybeWalletEntry(
   return maybeAccounts.map((maybeAccount) => decodeWalletEntry(maybeAccount));
 }
 
+export function getWalletEntrySize(): number {
+  return 65;
+}
+
 export async function fetchWalletEntryFromSeeds(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   seeds: WalletEntrySeeds,

@@ -11,6 +11,7 @@ import {
   tupleTypeNode,
   updateInstructionsVisitor,
 } from "codama";
+import { setFixedAccountSizesVisitor } from "@codama/visitors";
 import fs from "fs";
 import path from "path";
 
@@ -59,6 +60,8 @@ codama.update(
     },
   }),
 );
+
+codama.update(setFixedAccountSizesVisitor());
 
 function preserveConfigFiles() {
   const filesToPreserve = [

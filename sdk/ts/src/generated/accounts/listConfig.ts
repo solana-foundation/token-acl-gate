@@ -143,6 +143,10 @@ export async function fetchAllMaybeListConfig(
   return maybeAccounts.map((maybeAccount) => decodeListConfig(maybeAccount));
 }
 
+export function getListConfigSize(): number {
+  return 74;
+}
+
 export async function fetchListConfigFromSeeds(
   rpc: Parameters<typeof fetchEncodedAccount>[0],
   seeds: ListConfigSeeds,
