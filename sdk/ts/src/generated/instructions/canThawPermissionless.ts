@@ -27,28 +27,24 @@ import {
   type ReadonlySignerAccount,
   type ReadonlyUint8Array,
   type TransactionSigner,
-  type WritableAccount,
-  type WritableSignerAccount,
 } from '@solana/kit';
 import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const SETUP_EXTRA_METAS_DISCRIMINATOR = 4;
+export const CAN_THAW_PERMISSIONLESS_DISCRIMINATOR = 8;
 
-export function getSetupExtraMetasDiscriminatorBytes() {
-  return getU8Encoder().encode(SETUP_EXTRA_METAS_DISCRIMINATOR);
+export function getCanThawPermissionlessDiscriminatorBytes() {
+  return getU8Encoder().encode(CAN_THAW_PERMISSIONLESS_DISCRIMINATOR);
 }
 
-export type SetupExtraMetasInstruction<
+export type CanThawPermissionlessInstruction<
   TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountAuthority extends string | AccountMeta<string> = string,
-  TAccountPayer extends string | AccountMeta<string> = string,
-  TAccountTokenAclMintConfig extends string | AccountMeta<string> = string,
+  TAccountTokenAccount extends string | AccountMeta<string> = string,
   TAccountMint extends string | AccountMeta<string> = string,
+  TAccountOwner extends string | AccountMeta<string> = string,
+  TAccountFlagAccount extends string | AccountMeta<string> = string,
   TAccountExtraMetas extends string | AccountMeta<string> = string,
-  TAccountSystemProgram extends
-    | string
-    | AccountMeta<string> = '11111111111111111111111111111111',
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
   InstructionWithData<ReadonlyUint8Array> &
@@ -58,100 +54,102 @@ export type SetupExtraMetasInstruction<
         ? ReadonlySignerAccount<TAccountAuthority> &
             AccountSignerMeta<TAccountAuthority>
         : TAccountAuthority,
-      TAccountPayer extends string
-        ? WritableSignerAccount<TAccountPayer> &
-            AccountSignerMeta<TAccountPayer>
-        : TAccountPayer,
-      TAccountTokenAclMintConfig extends string
-        ? ReadonlyAccount<TAccountTokenAclMintConfig>
-        : TAccountTokenAclMintConfig,
+      TAccountTokenAccount extends string
+        ? ReadonlyAccount<TAccountTokenAccount>
+        : TAccountTokenAccount,
       TAccountMint extends string
         ? ReadonlyAccount<TAccountMint>
         : TAccountMint,
+      TAccountOwner extends string
+        ? ReadonlyAccount<TAccountOwner>
+        : TAccountOwner,
+      TAccountFlagAccount extends string
+        ? ReadonlyAccount<TAccountFlagAccount>
+        : TAccountFlagAccount,
       TAccountExtraMetas extends string
-        ? WritableAccount<TAccountExtraMetas>
+        ? ReadonlyAccount<TAccountExtraMetas>
         : TAccountExtraMetas,
-      TAccountSystemProgram extends string
-        ? ReadonlyAccount<TAccountSystemProgram>
-        : TAccountSystemProgram,
       ...TRemainingAccounts,
     ]
   >;
 
-export type SetupExtraMetasInstructionData = { discriminator: number };
+export type CanThawPermissionlessInstructionData = { discriminator: number };
 
-export type SetupExtraMetasInstructionDataArgs = {};
+export type CanThawPermissionlessInstructionDataArgs = {};
 
-export function getSetupExtraMetasInstructionDataEncoder(): FixedSizeEncoder<SetupExtraMetasInstructionDataArgs> {
+export function getCanThawPermissionlessInstructionDataEncoder(): FixedSizeEncoder<CanThawPermissionlessInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
-    (value) => ({ ...value, discriminator: SETUP_EXTRA_METAS_DISCRIMINATOR })
+    (value) => ({
+      ...value,
+      discriminator: CAN_THAW_PERMISSIONLESS_DISCRIMINATOR,
+    })
   );
 }
 
-export function getSetupExtraMetasInstructionDataDecoder(): FixedSizeDecoder<SetupExtraMetasInstructionData> {
+export function getCanThawPermissionlessInstructionDataDecoder(): FixedSizeDecoder<CanThawPermissionlessInstructionData> {
   return getStructDecoder([['discriminator', getU8Decoder()]]);
 }
 
-export function getSetupExtraMetasInstructionDataCodec(): FixedSizeCodec<
-  SetupExtraMetasInstructionDataArgs,
-  SetupExtraMetasInstructionData
+export function getCanThawPermissionlessInstructionDataCodec(): FixedSizeCodec<
+  CanThawPermissionlessInstructionDataArgs,
+  CanThawPermissionlessInstructionData
 > {
   return combineCodec(
-    getSetupExtraMetasInstructionDataEncoder(),
-    getSetupExtraMetasInstructionDataDecoder()
+    getCanThawPermissionlessInstructionDataEncoder(),
+    getCanThawPermissionlessInstructionDataDecoder()
   );
 }
 
-export type SetupExtraMetasInstructionExtraArgs = {
-  /** Up to 5 ListConfig accounts owned by this program */
+export type CanThawPermissionlessInstructionExtraArgs = {
+  /** Pairs of (ListConfig, WalletEntry) accounts. Must be passed as a flattened array. */
   addresses: Array<Address>;
 };
 
-export type SetupExtraMetasInput<
+export type CanThawPermissionlessInput<
   TAccountAuthority extends string = string,
-  TAccountPayer extends string = string,
-  TAccountTokenAclMintConfig extends string = string,
+  TAccountTokenAccount extends string = string,
   TAccountMint extends string = string,
+  TAccountOwner extends string = string,
+  TAccountFlagAccount extends string = string,
   TAccountExtraMetas extends string = string,
-  TAccountSystemProgram extends string = string,
 > = {
   authority: TransactionSigner<TAccountAuthority>;
-  payer: TransactionSigner<TAccountPayer>;
-  tokenAclMintConfig: Address<TAccountTokenAclMintConfig>;
+  tokenAccount: Address<TAccountTokenAccount>;
   mint: Address<TAccountMint>;
+  owner: Address<TAccountOwner>;
+  flagAccount: Address<TAccountFlagAccount>;
   extraMetas: Address<TAccountExtraMetas>;
-  systemProgram?: Address<TAccountSystemProgram>;
-  addresses: SetupExtraMetasInstructionExtraArgs['addresses'];
+  addresses: CanThawPermissionlessInstructionExtraArgs['addresses'];
 };
 
-export function getSetupExtraMetasInstruction<
+export function getCanThawPermissionlessInstruction<
   TAccountAuthority extends string,
-  TAccountPayer extends string,
-  TAccountTokenAclMintConfig extends string,
+  TAccountTokenAccount extends string,
   TAccountMint extends string,
+  TAccountOwner extends string,
+  TAccountFlagAccount extends string,
   TAccountExtraMetas extends string,
-  TAccountSystemProgram extends string,
   TProgramAddress extends
     Address = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
 >(
-  input: SetupExtraMetasInput<
+  input: CanThawPermissionlessInput<
     TAccountAuthority,
-    TAccountPayer,
-    TAccountTokenAclMintConfig,
+    TAccountTokenAccount,
     TAccountMint,
-    TAccountExtraMetas,
-    TAccountSystemProgram
+    TAccountOwner,
+    TAccountFlagAccount,
+    TAccountExtraMetas
   >,
   config?: { programAddress?: TProgramAddress }
-): SetupExtraMetasInstruction<
+): CanThawPermissionlessInstruction<
   TProgramAddress,
   TAccountAuthority,
-  TAccountPayer,
-  TAccountTokenAclMintConfig,
+  TAccountTokenAccount,
   TAccountMint,
-  TAccountExtraMetas,
-  TAccountSystemProgram
+  TAccountOwner,
+  TAccountFlagAccount,
+  TAccountExtraMetas
 > {
   // Program address.
   const programAddress =
@@ -160,14 +158,11 @@ export function getSetupExtraMetasInstruction<
   // Original accounts.
   const originalAccounts = {
     authority: { value: input.authority ?? null, isWritable: false },
-    payer: { value: input.payer ?? null, isWritable: true },
-    tokenAclMintConfig: {
-      value: input.tokenAclMintConfig ?? null,
-      isWritable: false,
-    },
+    tokenAccount: { value: input.tokenAccount ?? null, isWritable: false },
     mint: { value: input.mint ?? null, isWritable: false },
-    extraMetas: { value: input.extraMetas ?? null, isWritable: true },
-    systemProgram: { value: input.systemProgram ?? null, isWritable: false },
+    owner: { value: input.owner ?? null, isWritable: false },
+    flagAccount: { value: input.flagAccount ?? null, isWritable: false },
+    extraMetas: { value: input.extraMetas ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -176,12 +171,6 @@ export function getSetupExtraMetasInstruction<
 
   // Original args.
   const args = { ...input };
-
-  // Resolve default values.
-  if (!accounts.systemProgram.value) {
-    accounts.systemProgram.value =
-      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
-  }
 
   // Remaining accounts.
   const remainingAccounts: AccountMeta[] = args.addresses.map((address) => ({
@@ -193,50 +182,50 @@ export function getSetupExtraMetasInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.authority),
-      getAccountMeta(accounts.payer),
-      getAccountMeta(accounts.tokenAclMintConfig),
+      getAccountMeta(accounts.tokenAccount),
       getAccountMeta(accounts.mint),
+      getAccountMeta(accounts.owner),
+      getAccountMeta(accounts.flagAccount),
       getAccountMeta(accounts.extraMetas),
-      getAccountMeta(accounts.systemProgram),
       ...remainingAccounts,
     ],
-    data: getSetupExtraMetasInstructionDataEncoder().encode({}),
+    data: getCanThawPermissionlessInstructionDataEncoder().encode({}),
     programAddress,
-  } as SetupExtraMetasInstruction<
+  } as CanThawPermissionlessInstruction<
     TProgramAddress,
     TAccountAuthority,
-    TAccountPayer,
-    TAccountTokenAclMintConfig,
+    TAccountTokenAccount,
     TAccountMint,
-    TAccountExtraMetas,
-    TAccountSystemProgram
+    TAccountOwner,
+    TAccountFlagAccount,
+    TAccountExtraMetas
   >);
 }
 
-export type ParsedSetupExtraMetasInstruction<
+export type ParsedCanThawPermissionlessInstruction<
   TProgram extends string = typeof TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
     authority: TAccountMetas[0];
-    payer: TAccountMetas[1];
-    tokenAclMintConfig: TAccountMetas[2];
-    mint: TAccountMetas[3];
-    extraMetas: TAccountMetas[4];
-    systemProgram: TAccountMetas[5];
+    tokenAccount: TAccountMetas[1];
+    mint: TAccountMetas[2];
+    owner: TAccountMetas[3];
+    flagAccount: TAccountMetas[4];
+    extraMetas: TAccountMetas[5];
   };
-  data: SetupExtraMetasInstructionData;
+  data: CanThawPermissionlessInstructionData;
 };
 
-export function parseSetupExtraMetasInstruction<
+export function parseCanThawPermissionlessInstruction<
   TProgram extends string,
   TAccountMetas extends readonly AccountMeta[],
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
-): ParsedSetupExtraMetasInstruction<TProgram, TAccountMetas> {
+): ParsedCanThawPermissionlessInstruction<TProgram, TAccountMetas> {
   if (instruction.accounts.length < 6) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
@@ -251,12 +240,14 @@ export function parseSetupExtraMetasInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       authority: getNextAccount(),
-      payer: getNextAccount(),
-      tokenAclMintConfig: getNextAccount(),
+      tokenAccount: getNextAccount(),
       mint: getNextAccount(),
+      owner: getNextAccount(),
+      flagAccount: getNextAccount(),
       extraMetas: getNextAccount(),
-      systemProgram: getNextAccount(),
     },
-    data: getSetupExtraMetasInstructionDataDecoder().decode(instruction.data),
+    data: getCanThawPermissionlessInstructionDataDecoder().decode(
+      instruction.data
+    ),
   };
 }

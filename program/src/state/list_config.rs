@@ -1,13 +1,21 @@
+use codama::CodamaAccount;
 use pinocchio::{program_error::ProgramError, pubkey::Pubkey, ProgramResult};
 
 use super::{Discriminator, Transmutable};
 
+#[derive(CodamaAccount)]
 #[repr(C)]
+#[codama(discriminator(field = "discriminator"))]
+#[codama(seed(type = string, value = "list_config"))]
+#[codama(seed(name = "authority", type = public_key))]
+#[codama(seed(name = "seed", type = public_key))]
 pub struct ListConfig {
+    #[codama(default_value = 1)]
     pub discriminator: u8,
     pub authority: Pubkey,
     pub seed: Pubkey,
     pub mode: u8,
+    #[codama(type = number(u64))]
     pub wallets_count: [u8; 8],
 }
 
@@ -57,6 +65,7 @@ impl Discriminator for ListConfig {
     }
 }
 
+#[derive(codama::CodamaType)]
 #[repr(u8)]
 pub enum Mode {
     Allow,

@@ -14,6 +14,7 @@ import {
 } from '@solana/kit';
 import {
   type ParsedAddWalletInstruction,
+  type ParsedCanThawPermissionlessInstruction,
   type ParsedCreateListInstruction,
   type ParsedDeleteListInstruction,
   type ParsedRemoveWalletInstruction,
@@ -39,7 +40,7 @@ export function identifyTokenAclGateProgramAccount(
     return TokenAclGateProgramAccount.WalletEntry;
   }
   throw new Error(
-    'The provided account could not be identified as a token-acl-gate-program account.'
+    'The provided account could not be identified as a tokenAclGateProgram account.'
   );
 }
 
@@ -49,6 +50,7 @@ export enum TokenAclGateProgramInstruction {
   RemoveWallet,
   SetupExtraMetas,
   DeleteList,
+  CanThawPermissionless,
 }
 
 export function identifyTokenAclGateProgramInstruction(
@@ -70,8 +72,11 @@ export function identifyTokenAclGateProgramInstruction(
   if (containsBytes(data, getU8Encoder().encode(5), 0)) {
     return TokenAclGateProgramInstruction.DeleteList;
   }
+  if (containsBytes(data, getU8Encoder().encode(8), 0)) {
+    return TokenAclGateProgramInstruction.CanThawPermissionless;
+  }
   throw new Error(
-    'The provided instruction could not be identified as a token-acl-gate-program instruction.'
+    'The provided instruction could not be identified as a tokenAclGateProgram instruction.'
   );
 }
 
@@ -92,4 +97,7 @@ export type ParsedTokenAclGateProgramInstruction<
     } & ParsedSetupExtraMetasInstruction<TProgram>)
   | ({
       instructionType: TokenAclGateProgramInstruction.DeleteList;
-    } & ParsedDeleteListInstruction<TProgram>);
+    } & ParsedDeleteListInstruction<TProgram>)
+  | ({
+      instructionType: TokenAclGateProgramInstruction.CanThawPermissionless;
+    } & ParsedCanThawPermissionlessInstruction<TProgram>);

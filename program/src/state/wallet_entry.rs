@@ -1,9 +1,16 @@
+use codama::CodamaAccount;
 use pinocchio::pubkey::Pubkey;
 
 use super::{Discriminator, Transmutable};
 
+#[derive(CodamaAccount)]
 #[repr(C)]
+#[codama(discriminator(field = "discriminator"))]
+#[codama(seed(type = string, value = "wallet_entry"))]
+#[codama(seed(name = "list_config", type = public_key))]
+#[codama(seed(name = "wallet", type = public_key))]
 pub struct WalletEntry {
+    #[codama(default_value = 2)]
     pub discriminator: u8,
     pub wallet_address: Pubkey,
     pub list_config: Pubkey,

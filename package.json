@@ -11,20 +11,23 @@
     "build:program": "cargo build-sbf --manifest-path=program/Cargo.toml",
     "test": "cargo test-sbf --manifest-path=sdk/rust/Cargo.toml",
     "build:cli": "cargo build --manifest-path=cli/Cargo.toml",
-    "generate-sdks": "pnpx tsx codama.ts",
+    "generate-sdks": "node -r tsx/cjs codama.ts",
+    "generate-idl": "cd program && cargo check --features idl",
     "copy:test:fixtures": "cp target/deploy/token_acl_gate_program.so sdk/rust/tests/fixtures/"
   },
   "dependencies": {
+    "@codama/nodes": "^1.5.1",
     "@codama/renderers": "^1.0.34",
-    "@types/mocha": "^10.0.10",
     "@codama/renderers-js": "1.4.3",
     "@codama/renderers-rust": "1.2.7",
-    "codama": "1.3.8",
+    "@codama/visitors": "^1.5.1",
+    "@types/mocha": "^10.0.10",
+    "codama": "^1.5.1",
     "litesvm": "^0.2.0",
     "mocha": "^11.1.0",
     "solana-bankrun": "^0.4.0",
-    "zx": "^8.3.2",
-    "tsx": "^4.19.3"
+    "tsx": "^4.19.3",
+    "zx": "^8.3.2"
   },
   "devDependencies": {
     "@types/node": "^22.15.29"
