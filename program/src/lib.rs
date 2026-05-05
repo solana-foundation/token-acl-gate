@@ -42,9 +42,11 @@ fn process_instruction(
         DeleteList::DISCRIMINATOR => DeleteList::try_from(accounts)?.process(),
         AddWallet::DISCRIMINATOR => AddWallet::try_from(accounts)?.process(),
         RemoveWallet::DISCRIMINATOR => RemoveWallet::try_from(accounts)?.process(),
-        SetupExtraMetas::DISCRIMINATOR => SetupExtraMetas::try_from(accounts)?.process(),
+        SetupExtraMetas::DISCRIMINATOR => {
+            SetupExtraMetas::try_from(accounts)?.process(ExtraMetasVariant::Thaw)
+        }
         SetupFreezeExtraMetas::DISCRIMINATOR => {
-            SetupFreezeExtraMetas::try_from(accounts)?.process()
+            SetupExtraMetas::try_from(accounts)?.process(ExtraMetasVariant::Freeze)
         }
         _ => Err(ProgramError::InvalidInstructionData),
     }

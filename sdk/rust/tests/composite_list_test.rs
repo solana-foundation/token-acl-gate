@@ -115,23 +115,6 @@ mod thaw {
         let res = context.thaw_permissionless(&block_list, &ta).await;
         assert!(res.is_ok());
     }
-
-    /*#[tokio::test]
-    async fn thaws_whitelisted_wallet() {
-        let mut context = TestContext::new();
-
-        let _ = context.setup_token_acl();
-        let list_config = context.create_list(Mode::Allow);
-        let _ = context.setup_extra_metas(&[list_config]);
-
-        let wallet = solana_keypair::Keypair::new();
-        let user_pubkey = wallet.pubkey();
-        let _ = context.add_wallet_to_list(&list_config, &user_pubkey);
-        let ta = context.create_token_account(&wallet);
-
-        let res = context.thaw_permissionless(&wallet.pubkey(), &ta).await;
-        assert!(res.is_ok());
-    }*/
 }
 
 mod freeze {

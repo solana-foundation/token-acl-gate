@@ -14,6 +14,34 @@ use spl_tlv_account_resolution::{
 
 use crate::{load, ABLError, ListConfig, WalletEntry};
 
+#[derive(Clone, Copy)]
+pub(crate) enum ExtraMetasVariant {
+    Thaw,
+    Freeze,
+}
+
+impl ExtraMetasVariant {
+    fn seed(&self) -> &'static [u8] {
+        match self {
+            Self::Thaw => token_acl_interface::THAW_EXTRA_ACCOUNT_METAS_SEED,
+            Self::Freeze => token_acl_interface::FREEZE_EXTRA_ACCOUNT_METAS_SEED,
+        }
+    }
+
+    fn init_extra_account_metas(&self, data: &mut [u8], metas: &[ExtraAccountMeta]) {
+        match self {
+            Self::Thaw => ExtraAccountMetaList::init::<
+                token_acl_interface::instruction::CanThawPermissionlessInstruction,
+            >(data, metas)
+            .unwrap(),
+            Self::Freeze => ExtraAccountMetaList::init::<
+                token_acl_interface::instruction::CanFreezePermissionlessInstruction,
+            >(data, metas)
+            .unwrap(),
+        }
+    }
+}
+
 pub struct SetupExtraMetas<'a> {
     pub authority: &'a AccountInfo,
     pub payer: &'a AccountInfo,
@@ -22,7 +50,6 @@ pub struct SetupExtraMetas<'a> {
     pub extra_metas: &'a AccountInfo,
     pub system_program: &'a AccountInfo,
     pub remaining_accounts: &'a [AccountInfo],
-    pub extra_metas_bump: u8,
 }
 
 impl<'a> TryFrom<&'a [AccountInfo]> for SetupExtraMetas<'a> {
@@ -37,20 +64,6 @@ impl<'a> TryFrom<&'a [AccountInfo]> for SetupExtraMetas<'a> {
 
         if !authority.is_signer() {
             return Err(ABLError::InvalidAuthority);
-        }
-
-        // derive extra_metas account
-        let (extra_metas_address, extra_metas_bump) = find_program_address(
-            &[
-                token_acl_interface::THAW_EXTRA_ACCOUNT_METAS_SEED,
-                mint.key(),
-            ],
-            &crate::ID,
-        );
-        // need to check because we cannot rely on system program create instruction
-        // as the account may already be initialized
-        if extra_metas_address.ne(extra_metas.key()) {
-            return Err(ABLError::InvalidExtraMetasAccount);
         }
 
         if !token_acl_mint_config.is_owned_by(token_acl_interface::TOKEN_ACL_ID.as_array()) {
@@ -70,7 +83,6 @@ impl<'a> TryFrom<&'a [AccountInfo]> for SetupExtraMetas<'a> {
             extra_metas,
             system_program,
             remaining_accounts,
-            extra_metas_bump,
         })
     }
 }
@@ -78,7 +90,15 @@ impl<'a> TryFrom<&'a [AccountInfo]> for SetupExtraMetas<'a> {
 impl<'a> SetupExtraMetas<'a> {
     pub const DISCRIMINATOR: u8 = 0x04;
 
-    pub fn process(&self) -> ProgramResult {
+    pub(crate) fn process(&self, variant: ExtraMetasVariant) -> ProgramResult {
+        // need to check because we cannot rely on system program create instruction
+        // as the account may already be initialized
+        let (extra_metas_address, extra_metas_bump) =
+            find_program_address(&[variant.seed(), self.mint.key()], &crate::ID);
+        if extra_metas_address.ne(self.extra_metas.key()) {
+            return Err(ABLError::InvalidExtraMetasAccount.into());
+        }
+
         let mint_config_data = self.token_acl_mint_config.try_borrow_data()?;
         let mint_config = token_acl::state::load_mint_config(&mint_config_data)
             .map_err(|_| ABLError::InvalidTokenAclMintConfig)?;
@@ -148,12 +168,8 @@ impl<'a> SetupExtraMetas<'a> {
             }
         } else {
             // create new account
-            let bump_seed = [self.extra_metas_bump];
-            let seeds = seeds!(
-                token_acl_interface::THAW_EXTRA_ACCOUNT_METAS_SEED,
-                self.mint.key(),
-                &bump_seed
-            );
+            let bump_seed = [extra_metas_bump];
+            let seeds = seeds!(variant.seed(), self.mint.key(), &bump_seed);
             let signer = [Signer::from(&seeds)];
 
             let current_lamports = self.extra_metas.lamports();
@@ -185,10 +201,7 @@ impl<'a> SetupExtraMetas<'a> {
         let mut extra_metas_data = self.extra_metas.try_borrow_mut_data()?;
         let (metas, len) = get_extra_metas(lists_slice);
 
-        ExtraAccountMetaList::init::<
-            token_acl_interface::instruction::CanThawPermissionlessInstruction,
-        >(&mut extra_metas_data, &metas[..len])
-        .unwrap();
+        variant.init_extra_account_metas(&mut extra_metas_data, &metas[..len]);
         Ok(())
     }
 }

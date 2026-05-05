@@ -35,7 +35,10 @@ impl<'a> CanFreezePermissionless<'a> {
         let mut remaining_accounts = self.remaining_accounts.iter();
         while let Some(list) = remaining_accounts.next() {
             let wallet_entry = remaining_accounts.next().unwrap();
-            CanFreezePermissionless::validate_freeze_list(list, self.owner, wallet_entry)?;
+            CanFreezePermissionless::validate_freeze_list(list, self.owner, wallet_entry)
+                .inspect_err(|_| {
+                    pinocchio_log::log!("Failed to pass validation for list {}", list.key());
+                })?;
         }
 
         Ok(())
@@ -64,7 +67,7 @@ impl<'a> CanFreezePermissionless<'a> {
             crate::Mode::AllowAllEoas => {
                 let pt = PodEdwardsPoint(*owner.key());
                 if solana_curve25519::edwards::validate_edwards(&pt) {
-                    return Err(ABLError::InvalidWalletEntry.into());
+                    return Err(ABLError::AccountAllowed.into());
                 }
 
                 Self::require_missing_allowlist_wallet_entry(list.key(), owner.key(), wallet_entry)
