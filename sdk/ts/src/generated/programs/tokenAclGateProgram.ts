@@ -14,11 +14,13 @@ import {
 } from '@solana/kit';
 import {
   type ParsedAddWalletInstruction,
+  type ParsedCanFreezePermissionlessInstruction,
   type ParsedCanThawPermissionlessInstruction,
   type ParsedCreateListInstruction,
   type ParsedDeleteListInstruction,
   type ParsedRemoveWalletInstruction,
   type ParsedSetupExtraMetasInstruction,
+  type ParsedSetupFreezeExtraMetasInstruction,
 } from '../instructions';
 
 export const TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS =
@@ -50,7 +52,9 @@ export enum TokenAclGateProgramInstruction {
   RemoveWallet,
   SetupExtraMetas,
   DeleteList,
+  SetupFreezeExtraMetas,
   CanThawPermissionless,
+  CanFreezePermissionless,
 }
 
 export function identifyTokenAclGateProgramInstruction(
@@ -72,8 +76,14 @@ export function identifyTokenAclGateProgramInstruction(
   if (containsBytes(data, getU8Encoder().encode(5), 0)) {
     return TokenAclGateProgramInstruction.DeleteList;
   }
+  if (containsBytes(data, getU8Encoder().encode(6), 0)) {
+    return TokenAclGateProgramInstruction.SetupFreezeExtraMetas;
+  }
   if (containsBytes(data, getU8Encoder().encode(8), 0)) {
     return TokenAclGateProgramInstruction.CanThawPermissionless;
+  }
+  if (containsBytes(data, getU8Encoder().encode(214), 0)) {
+    return TokenAclGateProgramInstruction.CanFreezePermissionless;
   }
   throw new Error(
     'The provided instruction could not be identified as a tokenAclGateProgram instruction.'
@@ -99,5 +109,11 @@ export type ParsedTokenAclGateProgramInstruction<
       instructionType: TokenAclGateProgramInstruction.DeleteList;
     } & ParsedDeleteListInstruction<TProgram>)
   | ({
+      instructionType: TokenAclGateProgramInstruction.SetupFreezeExtraMetas;
+    } & ParsedSetupFreezeExtraMetasInstruction<TProgram>)
+  | ({
       instructionType: TokenAclGateProgramInstruction.CanThawPermissionless;
-    } & ParsedCanThawPermissionlessInstruction<TProgram>);
+    } & ParsedCanThawPermissionlessInstruction<TProgram>)
+  | ({
+      instructionType: TokenAclGateProgramInstruction.CanFreezePermissionless;
+    } & ParsedCanFreezePermissionlessInstruction<TProgram>);

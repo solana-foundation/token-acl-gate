@@ -35,11 +35,19 @@ fn process_instruction(
         CanThawPermissionless::DISCRIMINATOR => {
             CanThawPermissionless::try_from(accounts)?.process()
         }
+        CanFreezePermissionless::DISCRIMINATOR => {
+            CanFreezePermissionless::try_from(accounts)?.process()
+        }
         CreateList::DISCRIMINATOR => CreateList::try_from(accounts)?.process(remaining_data),
         DeleteList::DISCRIMINATOR => DeleteList::try_from(accounts)?.process(),
         AddWallet::DISCRIMINATOR => AddWallet::try_from(accounts)?.process(),
         RemoveWallet::DISCRIMINATOR => RemoveWallet::try_from(accounts)?.process(),
-        SetupExtraMetas::DISCRIMINATOR => SetupExtraMetas::try_from(accounts)?.process(),
+        SetupExtraMetas::DISCRIMINATOR => {
+            SetupExtraMetas::try_from(accounts)?.process(ExtraMetasVariant::Thaw)
+        }
+        SetupFreezeExtraMetas::DISCRIMINATOR => {
+            SetupExtraMetas::try_from(accounts)?.process(ExtraMetasVariant::Freeze)
+        }
         _ => Err(ProgramError::InvalidInstructionData),
     }
 }

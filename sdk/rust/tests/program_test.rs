@@ -155,6 +155,7 @@ impl TestContext {
             true,
         )
     }
+
     pub fn create_token_account_from_pubkey(&mut self, owner: &Pubkey) -> Pubkey {
         Self::create_token_account_with_params(
             &mut self.vm,
@@ -200,6 +201,42 @@ impl TestContext {
         );
 
         let ix = token_acl_gate_client::instructions::SetupExtraMetasBuilder::new()
+            .authority(self.token.auth.pubkey())
+            .payer(self.token.auth.pubkey())
+            .mint(self.token.mint)
+            .extra_metas(extra_metas)
+            .token_acl_mint_config(mint_cfg_pk)
+            .add_remaining_accounts(
+                lists
+                    .iter()
+                    .map(|list| AccountMeta::new_readonly(*list, false))
+                    .collect::<Vec<_>>()
+                    .as_slice(),
+            )
+            .instruction();
+
+        let tx = Transaction::new_signed_with_payer(
+            &[ix],
+            Some(&self.token.auth.pubkey()),
+            &[self.token.auth.insecure_clone()],
+            self.vm.latest_blockhash(),
+        );
+
+        let res = self.vm.send_transaction(tx);
+        assert!(res.is_ok());
+
+        extra_metas
+    }
+
+    pub fn setup_freeze_extra_metas(&mut self, lists: &[Pubkey]) -> Pubkey {
+        let (mint_cfg_pk, _) = token_acl_client::accounts::MintConfig::find_pda(&self.token.mint);
+
+        let extra_metas = token_acl_interface::get_freeze_extra_account_metas_address(
+            &self.token.mint,
+            &token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID,
+        );
+
+        let ix = token_acl_gate_client::instructions::SetupFreezeExtraMetasBuilder::new()
             .authority(self.token.auth.pubkey())
             .payer(self.token.auth.pubkey())
             .mint(self.token.mint)
@@ -299,6 +336,54 @@ impl TestContext {
         self.vm.send_transaction(tx)
     }
 
+    pub async fn get_freeze_permissionless_ix(
+        &mut self,
+        signer: &Pubkey,
+        owner: &Pubkey,
+        token_account: &Pubkey,
+    ) -> Instruction {
+        let (mint_cfg_pk, _) = token_acl_client::accounts::MintConfig::find_pda(&self.token.mint);
+
+        token_acl_client::create_freeze_permissionless_instruction_with_extra_metas(
+            signer,
+            token_account,
+            &self.token.mint,
+            &mint_cfg_pk,
+            &spl_token_2022_interface::ID,
+            owner,
+            false,
+            |pubkey| {
+                let account = self.vm.get_account(&pubkey);
+
+                async move {
+                    match account {
+                        Some(account) => Ok(Some(account.data)),
+                        None => Ok(None),
+                    }
+                }
+            },
+        )
+        .await
+        .unwrap()
+    }
+
+    pub async fn freeze_permissionless(
+        &mut self,
+        owner: &Pubkey,
+        token_account: &Pubkey,
+    ) -> TransactionResult {
+        let ix = self
+            .get_freeze_permissionless_ix(&self.auth.pubkey(), owner, token_account)
+            .await;
+        let tx = Transaction::new_signed_with_payer(
+            &[ix],
+            Some(&self.auth.pubkey()),
+            &[self.auth.insecure_clone()],
+            self.vm.latest_blockhash(),
+        );
+        self.vm.send_transaction(tx)
+    }
+
     pub fn setup_token_acl(&mut self) -> Pubkey {
         let (mint_cfg_pk, _) = token_acl_client::accounts::MintConfig::find_pda(&self.token.mint);
 
@@ -315,7 +400,7 @@ impl TestContext {
         let ix2 = token_acl_client::instructions::TogglePermissionlessInstructionsBuilder::new()
             .authority(self.token.auth.pubkey())
             .mint_config(mint_cfg_pk)
-            .freeze_enabled(false)
+            .freeze_enabled(true)
             .thaw_enabled(true)
             .instruction();
 
@@ -329,5 +414,24 @@ impl TestContext {
         assert!(res.is_ok());
 
         mint_cfg_pk
+    }
+
+    pub fn thaw(&mut self, token_account: &Pubkey) {
+        let ix = token_acl_client::instructions::ThawBuilder::new()
+            .authority(self.token.auth.pubkey())
+            .mint(self.token.mint)
+            .mint_config(token_acl_client::accounts::MintConfig::find_pda(&self.token.mint).0)
+            .token_account(*token_account)
+            .token_program(spl_token_2022_interface::ID)
+            .instruction();
+
+        let tx = Transaction::new_signed_with_payer(
+            &[ix],
+            Some(&self.token.auth.pubkey()),
+            &[self.token.auth.insecure_clone()],
+            self.vm.latest_blockhash(),
+        );
+        let res = self.vm.send_transaction(tx);
+        assert!(res.is_ok());
     }
 }

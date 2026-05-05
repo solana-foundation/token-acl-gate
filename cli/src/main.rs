@@ -72,6 +72,51 @@ async fn process_setup_extra_metas(
     Ok(signature)
 }
 
+async fn process_setup_freeze_extra_metas(
+    rpc_client: &Arc<RpcClient>,
+    payer: &Arc<dyn Signer>,
+    mint_address: &Pubkey,
+    lists: &[Pubkey],
+) -> Result<Signature, Box<dyn Error>> {
+    let token_acl_mint_config = token_acl_client::accounts::MintConfig::find_pda(mint_address).0;
+    let extra_metas = token_acl_interface::get_freeze_extra_account_metas_address(
+        mint_address,
+        &token_acl_gate_client::programs::TOKEN_ACL_GATE_PROGRAM_ID,
+    );
+    let ix = token_acl_gate_client::instructions::SetupFreezeExtraMetasBuilder::new()
+        .authority(payer.pubkey())
+        .payer(payer.pubkey())
+        .token_acl_mint_config(token_acl_mint_config)
+        .mint(*mint_address)
+        .extra_metas(extra_metas)
+        .add_remaining_accounts(
+            lists
+                .iter()
+                .map(|list| AccountMeta::new_readonly(*list, false))
+                .collect::<Vec<_>>()
+                .as_slice(),
+        )
+        .instruction();
+
+    let mut transaction = Transaction::new_unsigned(Message::new(&[ix], Some(&payer.pubkey())));
+
+    let blockhash = rpc_client
+        .get_latest_blockhash()
+        .await
+        .map_err(|err| format!("error: unable to get latest blockhash: {}", err))?;
+
+    transaction
+        .try_sign(&[payer], blockhash)
+        .map_err(|err| format!("error: failed to sign transaction: {}", err))?;
+
+    let signature = rpc_client
+        .send_and_confirm_transaction_with_spinner(&transaction)
+        .await
+        .map_err(|err| format!("error: send transaction: {}", err))?;
+
+    Ok(signature)
+}
+
 async fn process_create_list(
     rpc_client: &Arc<RpcClient>,
     payer: &Arc<dyn Signer>,
@@ -341,6 +386,27 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 )
                 ,
         )
+        .subcommand(
+            Command::new("apply-lists-to-mint-freeze")
+                .about("Configures the extra metas for the mint permissionless freeze. This sets up which lists are used during the permissionless freeze operation.")
+                .arg(
+                    Arg::new("mint_address")
+                        .value_name("MINT_ADDRESS")
+                        .value_parser(SignerSourceParserBuilder::default().allow_pubkey().build())
+                        .takes_value(true)
+                        .index(1)
+                        .help("Specify the mint address"),
+                )
+                .arg(
+                    Arg::new("lists")
+                        .value_name("LISTS")
+                        .value_parser(SignerSourceParserBuilder::default().allow_pubkey().build())
+                        .takes_value(true)
+                        .multiple_occurrences(true)
+                        .index(2)
+                        .help("Specify the list(s) address(es)"),
+                )
+        )
         .get_matches();
 
     let (command, matches) = app_matches.subcommand().unwrap();
@@ -471,6 +537,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     .await
                     .unwrap_or_else(|err| {
                         eprintln!("error: apply-lists-to-mint: {}", err);
+                        exit(1);
+                    });
+            println!("{}", response);
+        }
+        ("apply-lists-to-mint-freeze", arg_matches) => {
+            let mint_address =
+                SignerSource::try_get_pubkey(arg_matches, "mint_address", &mut wallet_manager)
+                    .unwrap()
+                    .unwrap();
+            println!("mint_address: {:?}", mint_address);
+
+            let lists = SignerSource::try_get_pubkeys(arg_matches, "lists", &mut wallet_manager)
+                .unwrap()
+                .unwrap();
+            println!("lists: {:?}", lists);
+            let response =
+                process_setup_freeze_extra_metas(&rpc_client, &config.payer, &mint_address, &lists)
+                    .await
+                    .unwrap_or_else(|err| {
+                        eprintln!("error: apply-lists-to-mint-freeze: {}", err);
                         exit(1);
                     });
             println!("{}", response);

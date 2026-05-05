@@ -11,6 +11,7 @@ version = "0.2.0"
 [workspace.dependencies]
 token-acl-gate-client = { path = "sdk/rust", version = "0.2.0" }
 solana-account-info = "=3.1.1"
+solana-account = "=3.2.0"
 solana-cpi = "=3.1.0"
 solana-decode-error = "=2.3.0"
 solana-instruction = { version = "=3.1.0", features = ["std"] }
