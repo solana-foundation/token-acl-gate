@@ -1,12 +1,10 @@
 pub mod program_test;
 use solana_instruction::AccountMeta;
 use solana_keypair::Keypair;
+use solana_keypair::Signer;
 use solana_pubkey::Pubkey;
-use solana_sdk::{
-    instruction::InstructionError,
-    signer::Signer,
-    transaction::{Transaction, TransactionError},
-};
+use solana_transaction::{InstructionError, Transaction, TransactionError};
+
 use token_acl_gate_client::{
     accounts::{ListConfig, WalletEntry},
     types::Mode,
@@ -287,7 +285,7 @@ async fn setup_list_extra_metas() {
         &ta,
         &context.token.mint,
         &mint_config,
-        &spl_token_2022::ID,
+        &spl_token_2022_interface::ID,
         &user_pubkey,
         false,
         |pubkey| {
@@ -372,7 +370,7 @@ async fn setup_list_extra_metas_with_multiple_lists() {
         &ta,
         &context.token.mint,
         &mint_config,
-        &spl_token_2022::ID,
+        &spl_token_2022_interface::ID,
         &user_pubkey,
         false,
         |pubkey| {
@@ -443,12 +441,11 @@ async fn fails_to_setup_list_extra_metas_with_invalid_gating_program() {
     let ix1 = token_acl_client::instructions::CreateConfigBuilder::new()
         .authority(context.token.auth.pubkey())
         // random invalid program id
-        .gating_program(spl_token_2022::ID)
+        .gating_program(spl_token_2022_interface::ID)
         .mint(context.token.mint)
         .mint_config(mint_cfg_pk)
         .payer(context.token.auth.pubkey())
-        .system_program(solana_system_interface::program::ID)
-        .token_program(spl_token_2022::ID)
+        .token_program(spl_token_2022_interface::ID)
         .instruction();
 
     let list_config_address = context.create_list(Mode::Allow);

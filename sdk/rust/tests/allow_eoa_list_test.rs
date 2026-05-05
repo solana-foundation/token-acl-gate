@@ -1,13 +1,11 @@
 pub mod program_test;
-use solana_keypair::Keypair;
-use solana_sdk::{
-    program_option::COption, program_pack::Pack, signer::Signer, transaction::Transaction,
-};
-use spl_associated_token_account_client::{
-    address::get_associated_token_address_with_program_id,
-    instruction::create_associated_token_account,
-};
-use spl_token_2022::state::{Account, AccountState};
+use solana_keypair::{Keypair, Signer};
+use solana_program_option::COption;
+use solana_program_pack::Pack;
+use solana_transaction::Transaction;
+use spl_associated_token_account_interface::address::get_associated_token_address_with_program_id;
+use spl_associated_token_account_interface::instruction::create_associated_token_account_idempotent;
+use spl_token_2022_interface::state::{Account, AccountState};
 use token_acl_gate_client::types::Mode;
 
 use crate::program_test::TestContext;
@@ -78,14 +76,14 @@ async fn thaws_eoa_wallet_on_ata_creation() {
     let token_account = get_associated_token_address_with_program_id(
         &user_pubkey,
         &context.token.mint,
-        &spl_token_2022::ID,
+        &spl_token_2022_interface::ID,
     );
 
-    let ix = create_associated_token_account(
+    let ix = create_associated_token_account_idempotent(
         &user_pubkey,
         &user_pubkey,
         &context.token.mint,
-        &spl_token_2022::ID,
+        &spl_token_2022_interface::ID,
     );
     instructions.push(ix);
 
@@ -109,7 +107,7 @@ async fn thaws_eoa_wallet_on_ata_creation() {
         &token_account,
         &context.token.mint,
         &mint_cfg_pk,
-        &spl_token_2022::ID,
+        &spl_token_2022_interface::ID,
         &user_pubkey,
         false,
         |pubkey| {
