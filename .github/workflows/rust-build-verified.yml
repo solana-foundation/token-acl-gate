@@ -13,11 +13,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install verifiable build deps
-        uses: solana-developers/github-actions/setup-all@e2cd34eb09f996b48be7f6daeb8f455094dd6d53
+        uses: solana-developers/github-actions/setup-all@e2cd34eb09f996b48be7f6daeb8f455094dd6d53 # v0.2.10
         with:
           verify_version: 0.5.0
 
       - name: Run verifiable build
-        uses: solana-developers/github-actions/build-verified@e2cd34eb09f996b48be7f6daeb8f455094dd6d53
+        uses: solana-developers/github-actions/build-verified@e2cd34eb09f996b48be7f6daeb8f455094dd6d53 # v0.2.10
         with:
           program: token_acl_gate_program
