@@ -1,0 +1,21 @@
+name: Verified Build
+
+on:
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    name: Run verifiable build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install verifiable build deps
+        uses: solana-developers/github-actions/setup-all@0.2.10
+        with:
+          verify-version: 0.5.0
+
+      - name: Run verifiable build
+        uses: solana-developers/github-actions/build-verified@0.2.10
+        with:
+          program: token_acl_gate_program

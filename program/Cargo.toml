@@ -1,7 +1,9 @@
 [package]
 name = "token-acl-gate-program"
-version = "0.1.0"
-edition = "2021"
+version = { workspace = true }
+repository = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
 
 [lib]
 crate-type = ["lib", "cdylib"]
