@@ -10,10 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
       - name: Install verifiable build deps
         uses: solana-developers/github-actions/setup-all@0.2.10
         with:
-          verify-version: 0.5.0
+          verify_version: 0.5.0
 
       - name: Run verifiable build
         uses: solana-developers/github-actions/build-verified@0.2.10
