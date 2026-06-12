@@ -1,8 +1,6 @@
 use pinocchio::{account_info::AccountInfo, pubkey::Pubkey, ProgramResult};
 
-use crate::{load, ABLError, ListConfig, WalletEntry};
-
-use solana_curve25519::edwards::PodEdwardsPoint;
+use crate::{is_edwards_point, load, ABLError, ListConfig, WalletEntry};
 
 /// SECURITY ASSUMPTIONS OVER CAN THAW PERMISSIONLESS EXECUTION
 ///
@@ -77,9 +75,7 @@ impl<'a> CanThawPermissionless<'a> {
                 Ok(())
             }
             crate::Mode::AllowAllEoas => {
-                let pt = PodEdwardsPoint(*owner.key());
-
-                if !solana_curve25519::edwards::validate_edwards(&pt) {
+                if !is_edwards_point(owner.key()) {
                     let ab_wallet_data: &[u8] = &wallet_entry.try_borrow_data()?;
                     let wallet = unsafe {
                         load::<WalletEntry>(ab_wallet_data).map_err(|_| ABLError::AccountBlocked)?

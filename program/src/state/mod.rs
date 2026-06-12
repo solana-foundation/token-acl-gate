@@ -1,7 +1,8 @@
 pub mod list_config;
 pub mod wallet_entry;
 pub use list_config::*;
-use pinocchio::account_info::AccountInfo;
+use pinocchio::{account_info::AccountInfo, pubkey::Pubkey};
+use solana_curve25519::edwards::PodEdwardsPoint;
 pub use wallet_entry::*;
 
 use crate::ABLError;
@@ -130,4 +131,14 @@ pub fn has_immutable_owner_extension(token_account: &AccountInfo) -> bool {
         start += EXTENSION_HEADER_LEN + extension_len as usize;
     }
     false
+}
+
+/// Returns true if the public key is on the edwards25519 curve.
+///
+/// The program treats on-curve owners as EOA-like because they can correspond
+/// to an ed25519 private key. Off-curve owners are treated as PDA-like.
+#[inline]
+pub fn is_edwards_point(key: &Pubkey) -> bool {
+    let point = PodEdwardsPoint(*key);
+    solana_curve25519::edwards::validate_edwards(&point)
 }
