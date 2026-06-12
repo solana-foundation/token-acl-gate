@@ -20,7 +20,7 @@ pub struct CanFreezePermissionless<'a> {
     pub remaining_accounts: &'a [AccountInfo],
 }
 
-/// Outcome of a freeze request for a single (list, wallet) pair)
+/// Outcome of a freeze request for a single (list, wallet) pair
 enum FreezeDecision {
     Freeze,
     Skip,
@@ -63,9 +63,6 @@ impl<'a> CanFreezePermissionless<'a> {
             }
         }
 
-        // Freeze request will be rejected if a wallet is not approved by any configured list.
-        // Since thaw will return true if not present on anylist, we avoid a griefing attack vector
-        // where an attacker could continuously flip a token account between thawed and frozen.
         Err(ABLError::AccountAllowed.into())
     }
 
@@ -88,13 +85,13 @@ impl<'a> CanFreezePermissionless<'a> {
         match list_config.get_mode() {
             crate::Mode::AllowAllEoas if is_edwards_point(owner.key()) => Ok(FreezeDecision::Skip),
             crate::Mode::Allow | crate::Mode::AllowAllEoas => Ok(
-                match Self::check_wallet_entry_state(list.key(), owner.key(), wallet_entry)? {
+                match Self::check_wallet_entry_state(list.key(), wallet_entry)? {
                     WalletEntry::Present => FreezeDecision::Skip,
                     WalletEntry::Missing => FreezeDecision::Freeze,
                 },
             ),
             crate::Mode::Block => Ok(
-                match Self::check_wallet_entry_state(list.key(), owner.key(), wallet_entry)? {
+                match Self::check_wallet_entry_state(list.key(), wallet_entry)? {
                     WalletEntry::Present => FreezeDecision::Freeze,
                     WalletEntry::Missing => FreezeDecision::Skip,
                 },
@@ -104,7 +101,6 @@ impl<'a> CanFreezePermissionless<'a> {
 
     fn check_wallet_entry_state(
         list_config: &Pubkey,
-        owner: &Pubkey,
         wallet_entry: &AccountInfo,
     ) -> Result<WalletEntry, ProgramError> {
         // either the list exists and is owned by this program or it doesn't exist.
@@ -118,7 +114,7 @@ impl<'a> CanFreezePermissionless<'a> {
 
         match res {
             Ok(wallet) => {
-                if wallet.list_config.ne(list_config) || wallet.wallet_address.ne(owner) {
+                if wallet.list_config.ne(list_config) {
                     return Err(ABLError::InvalidWalletEntry.into());
                 }
                 Ok(WalletEntry::Present)
