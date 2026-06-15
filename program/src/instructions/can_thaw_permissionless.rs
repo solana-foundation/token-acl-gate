@@ -93,7 +93,7 @@ impl<'a> CanThawPermissionless<'a> {
                 let res = unsafe { load::<WalletEntry>(ab_wallet_data) };
 
                 // either the block exists and is owned by this program
-                // or it doest exist. We want to avoid PDA derivation to waste more CUs
+                // or it doesn't exist. We want to avoid PDA derivation to waste more CUs
                 if !wallet_entry.is_owned_by(&Pubkey::default())
                     && !wallet_entry.is_owned_by(&crate::ID)
                 {

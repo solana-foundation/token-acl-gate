@@ -201,7 +201,7 @@ mod freeze {
         let _ = context.add_wallet_to_list(&allow_all_eoas_with_pda_list, &block_list);
         context.thaw(&ta);
 
-        // wallet is on all allowlist and not on blocklist, so it hits fallback return
+        // wallet is on all allowlists and not on the blocklist, so freeze returns an AccountAllowed error
         let res = context.freeze_permissionless(&block_list, &ta).await;
         assert!(res.is_err());
     }
