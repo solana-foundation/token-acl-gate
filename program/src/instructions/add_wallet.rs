@@ -100,7 +100,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for AddWallet<'a> {
         );
 
         if wallet_entry_pk.ne(wallet_entry.key()) {
-            return Err(ABLError::InvalidWalletEntry.into());
+            return Err(ABLError::InvalidWalletEntry);
         }
 
         // check if system program is valid

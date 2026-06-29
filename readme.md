@@ -131,9 +131,6 @@ cargo run --bin token-acl-gate-cli -- create-list --mode allow
 
 # Create a block list
 cargo run --bin token-acl-gate-cli -- create-list --mode block
-
-# Create an allow-all-eoas list
-cargo run --bin token-acl-gate-cli -- create-list --mode allow-all-eoas
 ```
 
 **Delete a list:**

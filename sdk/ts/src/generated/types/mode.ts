@@ -17,7 +17,7 @@ import {
 
 export enum Mode {
   Allow,
-  AllowAllEoas,
+  Unused,
   Block,
 }
 

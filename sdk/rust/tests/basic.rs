@@ -96,13 +96,13 @@ async fn creates_list_with_different_mode() {
     assert_eq!(config.authority, context.auth.pubkey());
     assert_eq!(config.mode, Mode::Block as u8);
 
-    let list_config_address = context.create_list(Mode::AllowAllEoas);
+    let list_config_address = context.create_list(Mode::Allow);
 
     let list_config = context.vm.get_account(&list_config_address).unwrap();
     let config = ListConfig::from_bytes(&list_config.data).unwrap();
 
     assert_eq!(config.authority, context.auth.pubkey());
-    assert_eq!(config.mode, Mode::AllowAllEoas as u8);
+    assert_eq!(config.mode, Mode::Allow as u8);
 }
 
 #[tokio::test]
@@ -319,7 +319,6 @@ async fn setup_list_extra_metas_with_multiple_lists() {
 
     let list_config_address = context.create_list(Mode::Allow);
     let list_config_address_2 = context.create_list(Mode::Block);
-    let list_config_address_3 = context.create_list(Mode::AllowAllEoas);
 
     let extra_metas = token_acl_interface::get_thaw_extra_account_metas_address(
         &context.token.mint,
@@ -335,7 +334,6 @@ async fn setup_list_extra_metas_with_multiple_lists() {
         .add_remaining_accounts(&[
             AccountMeta::new_readonly(list_config_address, false),
             AccountMeta::new_readonly(list_config_address_2, false),
-            AccountMeta::new_readonly(list_config_address_3, false),
         ])
         .instruction();
 
@@ -357,10 +355,6 @@ async fn setup_list_extra_metas_with_multiple_lists() {
     );
     let (wallet_entry2, _) = token_acl_gate_client::accounts::WalletEntry::find_pda(
         &list_config_address_2,
-        &wallet.pubkey(),
-    );
-    let (wallet_entry3, _) = token_acl_gate_client::accounts::WalletEntry::find_pda(
-        &list_config_address_3,
         &wallet.pubkey(),
     );
     let ta = context.create_token_account(&wallet);
@@ -397,19 +391,11 @@ async fn setup_list_extra_metas_with_multiple_lists() {
     assert!(ix
         .accounts
         .iter()
-        .any(|account| account.pubkey == list_config_address_3));
-    assert!(ix
-        .accounts
-        .iter()
         .any(|account| account.pubkey == wallet_entry));
     assert!(ix
         .accounts
         .iter()
         .any(|account| account.pubkey == wallet_entry2));
-    assert!(ix
-        .accounts
-        .iter()
-        .any(|account| account.pubkey == wallet_entry3));
 }
 
 #[tokio::test]
@@ -420,16 +406,11 @@ async fn setup_list_extra_metas_multiple_times() {
 
     let list_config_address = context.create_list(Mode::Allow);
     let list_config_address_2 = context.create_list(Mode::Block);
-    let list_config_address_3 = context.create_list(Mode::AllowAllEoas);
 
     let _res = context.setup_extra_metas(&[list_config_address]);
-    let _res = context.setup_extra_metas(&[
-        list_config_address,
-        list_config_address_2,
-        list_config_address_3,
-    ]);
     let _res = context.setup_extra_metas(&[list_config_address, list_config_address_2]);
     let _res = context.setup_extra_metas(&[]);
+    let _res = context.setup_extra_metas(&[list_config_address_2, list_config_address]);
 }
 
 #[tokio::test]
@@ -561,7 +542,6 @@ async fn setup_freeze_list_extra_metas_with_multiple_lists() {
 
     let list_config_address = context.create_list(Mode::Allow);
     let list_config_address_2 = context.create_list(Mode::Block);
-    let list_config_address_3 = context.create_list(Mode::AllowAllEoas);
 
     let extra_metas = token_acl_interface::get_freeze_extra_account_metas_address(
         &context.token.mint,
@@ -577,7 +557,6 @@ async fn setup_freeze_list_extra_metas_with_multiple_lists() {
         .add_remaining_accounts(&[
             AccountMeta::new_readonly(list_config_address, false),
             AccountMeta::new_readonly(list_config_address_2, false),
-            AccountMeta::new_readonly(list_config_address_3, false),
         ])
         .instruction();
 
@@ -599,10 +578,6 @@ async fn setup_freeze_list_extra_metas_with_multiple_lists() {
     );
     let (wallet_entry2, _) = token_acl_gate_client::accounts::WalletEntry::find_pda(
         &list_config_address_2,
-        &wallet.pubkey(),
-    );
-    let (wallet_entry3, _) = token_acl_gate_client::accounts::WalletEntry::find_pda(
-        &list_config_address_3,
         &wallet.pubkey(),
     );
     let ta = context.create_token_account(&wallet);
@@ -639,19 +614,11 @@ async fn setup_freeze_list_extra_metas_with_multiple_lists() {
     assert!(ix
         .accounts
         .iter()
-        .any(|account| account.pubkey == list_config_address_3));
-    assert!(ix
-        .accounts
-        .iter()
         .any(|account| account.pubkey == wallet_entry));
     assert!(ix
         .accounts
         .iter()
         .any(|account| account.pubkey == wallet_entry2));
-    assert!(ix
-        .accounts
-        .iter()
-        .any(|account| account.pubkey == wallet_entry3));
 }
 
 #[tokio::test]
@@ -662,16 +629,11 @@ async fn setup_freeze_list_extra_metas_multiple_times() {
 
     let list_config_address = context.create_list(Mode::Allow);
     let list_config_address_2 = context.create_list(Mode::Block);
-    let list_config_address_3 = context.create_list(Mode::AllowAllEoas);
 
     let _res = context.setup_freeze_extra_metas(&[list_config_address]);
-    let _res = context.setup_freeze_extra_metas(&[
-        list_config_address,
-        list_config_address_2,
-        list_config_address_3,
-    ]);
     let _res = context.setup_freeze_extra_metas(&[list_config_address, list_config_address_2]);
     let _res = context.setup_freeze_extra_metas(&[]);
+    let _res = context.setup_freeze_extra_metas(&[list_config_address_2, list_config_address]);
 }
 
 #[tokio::test]
