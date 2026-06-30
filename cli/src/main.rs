@@ -308,7 +308,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         .takes_value(true)
                         .short('m')
                         .long("mode")
-                        .possible_values(["allow", "allow-all-eoas", "block"])
+                        .possible_values(["allow", "block"])
                         .required(true)
                         .help("Specify the mode"),
                 )
@@ -460,7 +460,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
             let mode = arg_matches.get_one::<String>("mode").unwrap();
             let mode = match mode.as_str() {
                 "allow" => token_acl_gate_client::types::Mode::Allow,
-                "allow-all-eoas" => token_acl_gate_client::types::Mode::AllowAllEoas,
                 "block" => token_acl_gate_client::types::Mode::Block,
                 _ => unreachable!(),
             };

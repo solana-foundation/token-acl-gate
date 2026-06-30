@@ -1,6 +1,6 @@
 use pinocchio::{account_info::AccountInfo, pubkey::Pubkey, ProgramResult};
 
-use crate::{is_edwards_point, load, ABLError, ListConfig, WalletEntry};
+use crate::{load, ABLError, ListConfig, WalletEntry};
 
 /// SECURITY ASSUMPTIONS OVER CAN THAW PERMISSIONLESS EXECUTION
 ///
@@ -47,7 +47,7 @@ impl<'a> CanThawPermissionless<'a> {
 
     fn validate_thaw_list(
         list: &AccountInfo,
-        owner: &AccountInfo,
+        _owner: &AccountInfo,
         wallet_entry: &AccountInfo,
     ) -> ProgramResult {
         if !list.is_owned_by(&crate::ID) {
@@ -74,20 +74,6 @@ impl<'a> CanThawPermissionless<'a> {
 
                 Ok(())
             }
-            crate::Mode::AllowAllEoas => {
-                if !is_edwards_point(owner.key()) {
-                    let ab_wallet_data: &[u8] = &wallet_entry.try_borrow_data()?;
-                    let wallet = unsafe {
-                        load::<WalletEntry>(ab_wallet_data).map_err(|_| ABLError::AccountBlocked)?
-                    };
-
-                    if !wallet_entry.is_owned_by(&crate::ID) || wallet.list_config.ne(list.key()) {
-                        return Err(ABLError::InvalidWalletEntry.into());
-                    }
-                }
-
-                Ok(())
-            }
             crate::Mode::Block => {
                 let ab_wallet_data: &[u8] = &wallet_entry.try_borrow_data()?;
                 let res = unsafe { load::<WalletEntry>(ab_wallet_data) };
@@ -108,7 +94,8 @@ impl<'a> CanThawPermissionless<'a> {
                 } else {
                     Ok(())
                 }
-            }
+            },
+            _ => Err(ABLError::InvalidListConfig.into())
         }
     }
 }

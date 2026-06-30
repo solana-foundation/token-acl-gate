@@ -2,7 +2,7 @@ use pinocchio::{
     account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey, ProgramResult,
 };
 
-use crate::{is_edwards_point, load, ABLError, ListConfig, WalletEntry as WalletEntryState};
+use crate::{load, ABLError, ListConfig, WalletEntry as WalletEntryState};
 
 /// SECURITY ASSUMPTIONS OVER CAN FREEZE PERMISSIONLESS EXECUTION
 ///
@@ -53,7 +53,7 @@ impl<'a> CanFreezePermissionless<'a> {
         let mut remaining_accounts = self.remaining_accounts.iter();
         while let Some(list) = remaining_accounts.next() {
             let wallet_entry = remaining_accounts.next().unwrap();
-            match CanFreezePermissionless::validate_freeze_list(list, self.owner, wallet_entry) {
+            match CanFreezePermissionless::validate_freeze_list(list, wallet_entry) {
                 Ok(FreezeDecision::Freeze) => return Ok(()),
                 Ok(FreezeDecision::Skip) => {}
                 Err(err) => {
@@ -68,7 +68,6 @@ impl<'a> CanFreezePermissionless<'a> {
 
     fn validate_freeze_list(
         list: &AccountInfo,
-        owner: &AccountInfo,
         wallet_entry: &AccountInfo,
     ) -> Result<FreezeDecision, ProgramError> {
         if !list.is_owned_by(&crate::ID) {
@@ -80,11 +79,9 @@ impl<'a> CanFreezePermissionless<'a> {
 
         // Freeze semantics are the inverse of thaw:
         // - Allow: freeze if wallet is NOT on the list
-        // - AllowAllEoas: freeze if wallet is not an EOA AND not on the list
         // - Block: freeze if wallet IS on the list
         match list_config.get_mode() {
-            crate::Mode::AllowAllEoas if is_edwards_point(owner.key()) => Ok(FreezeDecision::Skip),
-            crate::Mode::Allow | crate::Mode::AllowAllEoas => Ok(
+            crate::Mode::Allow => Ok(
                 match Self::check_wallet_entry_state(list.key(), wallet_entry)? {
                     WalletEntry::Present => FreezeDecision::Skip,
                     WalletEntry::Missing => FreezeDecision::Freeze,
@@ -96,6 +93,7 @@ impl<'a> CanFreezePermissionless<'a> {
                     WalletEntry::Missing => FreezeDecision::Skip,
                 },
             ),
+            _ => Err(ABLError::InvalidListConfig.into())
         }
     }
 

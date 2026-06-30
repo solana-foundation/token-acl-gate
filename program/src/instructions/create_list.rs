@@ -54,7 +54,8 @@ impl<'a> CreateList<'a> {
             return Err(ABLError::InvalidData.into());
         }
 
-        if *mode > 2u8 {
+        // lets skip 1 for backwards compatibility
+        if *mode > 2u8 || *mode == 1 {
             return Err(ABLError::InvalidData.into());
         }
 

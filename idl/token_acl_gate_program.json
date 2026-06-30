@@ -133,10 +133,12 @@
               "name": "allow"
             },
             {
+              "discriminator": 1,
               "kind": "enumEmptyVariantTypeNode",
-              "name": "allowAllEoas"
+              "name": "unused"
             },
             {
+              "discriminator": 2,
               "kind": "enumEmptyVariantTypeNode",
               "name": "block"
             }
