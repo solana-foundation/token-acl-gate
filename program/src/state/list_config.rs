@@ -25,7 +25,8 @@ impl ListConfig {
     pub fn get_mode(&self) -> Mode {
         match self.mode {
             0 => Mode::Allow,
-            _ => Mode::Block,
+            2 => Mode::Block,
+            _ => Mode::Unused
         }
     }
 

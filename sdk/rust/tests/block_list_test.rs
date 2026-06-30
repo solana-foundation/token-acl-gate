@@ -36,7 +36,6 @@ mod thaw {
         let ta = context.create_token_account(&wallet);
 
         let res = context.thaw_permissionless(&wallet.pubkey(), &ta).await;
-        println!("res: {:?}", res);
         assert!(res.is_err());
     }
 }

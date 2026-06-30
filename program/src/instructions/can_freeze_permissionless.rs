@@ -53,7 +53,7 @@ impl<'a> CanFreezePermissionless<'a> {
         let mut remaining_accounts = self.remaining_accounts.iter();
         while let Some(list) = remaining_accounts.next() {
             let wallet_entry = remaining_accounts.next().unwrap();
-            match CanFreezePermissionless::validate_freeze_list(list, self.owner, wallet_entry) {
+            match CanFreezePermissionless::validate_freeze_list(list, wallet_entry) {
                 Ok(FreezeDecision::Freeze) => return Ok(()),
                 Ok(FreezeDecision::Skip) => {}
                 Err(err) => {
@@ -68,7 +68,6 @@ impl<'a> CanFreezePermissionless<'a> {
 
     fn validate_freeze_list(
         list: &AccountInfo,
-        _owner: &AccountInfo,
         wallet_entry: &AccountInfo,
     ) -> Result<FreezeDecision, ProgramError> {
         if !list.is_owned_by(&crate::ID) {
