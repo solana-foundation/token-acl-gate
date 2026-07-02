@@ -95,7 +95,7 @@ dependencies = [
  "solana-bn254",
  "solana-clock",
  "solana-cpi",
- "solana-curve25519 3.1.11",
+ "solana-curve25519",
  "solana-hash 3.1.0",
  "solana-instruction",
  "solana-keccak-hasher",
@@ -4889,20 +4889,6 @@ dependencies = [
 
 [[package]]
 name = "solana-curve25519"
-version = "2.3.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eae4261b9a8613d10e77ac831a8fa60b6fa52b9b103df46d641deff9f9812a23"
-dependencies = [
- "bytemuck",
- "bytemuck_derive",
- "curve25519-dalek",
- "solana-define-syscall 2.3.0",
- "subtle",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "solana-curve25519"
 version = "3.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a9eaec815ed773919bc7269c027933fc2472d7b9876f68ea6f1281c7daa5278"
@@ -4914,12 +4900,6 @@ dependencies = [
  "subtle",
  "thiserror 2.0.18",
 ]
-
-[[package]]
-name = "solana-define-syscall"
-version = "2.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ae3e2abcf541c8122eafe9a625d4d194b4023c20adde1e251f94e056bb1aee2"
 
 [[package]]
 name = "solana-define-syscall"
@@ -6606,7 +6586,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha3",
- "solana-curve25519 3.1.11",
+ "solana-curve25519",
  "solana-derivation-path",
  "solana-instruction",
  "solana-pubkey 3.0.0",
@@ -6864,7 +6844,7 @@ checksum = "afbeb07f737d868f145512a4bcf9f59da275b7a3483df0add3f71eb812b689fb"
 dependencies = [
  "base64 0.22.1",
  "bytemuck",
- "solana-curve25519 3.1.11",
+ "solana-curve25519",
  "solana-zk-sdk",
 ]
 
@@ -6876,7 +6856,7 @@ checksum = "879a9ebad0d77383d3ea71e7de50503554961ff0f4ef6cbca39ad126e6f6da3a"
 dependencies = [
  "bytemuck",
  "solana-account-info",
- "solana-curve25519 3.1.11",
+ "solana-curve25519",
  "solana-instruction",
  "solana-instructions-sysvar",
  "solana-msg",
@@ -7250,9 +7230,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "token-acl"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84fe6b79908a70467e8d980efe6cc33b6c6fc8279d64355a436f61ea40be50d3"
+checksum = "992ebb178e45245cb0e1da8174be45dfd4df99e931b5b8f6e9001a5f65119ba2"
 dependencies = [
  "bytemuck",
  "solana-cpi",
@@ -7269,9 +7249,9 @@ dependencies = [
 
 [[package]]
 name = "token-acl-client"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38c7a599bf1973e8b8779e323610d5ab2b04b98d3a504358c617922d1058cada"
+checksum = "493c0311bedfeb5d2acc778d805e413d992652a838f1ee24be444ccac3d19ef9"
 dependencies = [
  "borsh",
  "num-derive",
@@ -7295,7 +7275,7 @@ dependencies = [
 
 [[package]]
 name = "token-acl-gate-cli"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "clap 3.2.25",
  "solana-clap-v3-utils",
@@ -7317,7 +7297,7 @@ dependencies = [
 
 [[package]]
 name = "token-acl-gate-client"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "borsh",
  "litesvm",
@@ -7346,7 +7326,7 @@ dependencies = [
 
 [[package]]
 name = "token-acl-gate-program"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "bytemuck",
  "codama",
@@ -7355,7 +7335,6 @@ dependencies = [
  "pinocchio-pubkey",
  "pinocchio-system",
  "serde_json",
- "solana-curve25519 2.3.13",
  "spl-discriminator",
  "spl-tlv-account-resolution",
  "token-acl",
@@ -7364,9 +7343,9 @@ dependencies = [
 
 [[package]]
 name = "token-acl-interface"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53002cc5a39ad38bb410bb3b5349757128ff1c3ac7cd1a9c9d4f2df60097cac6"
+checksum = "20091e86e01bed85f60d6f194b5715dde4dbcaacd56473901bf93fc39de3e92a"
 dependencies = [
  "num-traits",
  "solana-account-info",

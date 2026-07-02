@@ -1,6 +1,6 @@
 {
     "name": "@solana/token-acl-gate-sdk",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "SDK for Token ACL Gate program",
     "module": "./dist/src/index.mjs",
     "main": "./dist/src/index.js",
@@ -33,7 +33,7 @@
       "version-packages": "changeset version"
     },
     "dependencies": {
-      "@solana/kit": "^5.0.0"
+      "@solana/kit": "^6.0.0"
     },
     "devDependencies": {
       "@changesets/changelog-github": "^0.5.1",
