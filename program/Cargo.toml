@@ -26,7 +26,6 @@ token-acl-interface = { workspace = true }
 token-acl = { workspace = true, features = [
     "no-entrypoint",
 ] }
-solana-curve25519 = "=2.3.13"
 codama = { workspace = true }
 
 [build-dependencies]
