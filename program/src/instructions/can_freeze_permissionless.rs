@@ -38,14 +38,6 @@ impl<'a> CanFreezePermissionless<'a> {
     pub const DISCRIMINATOR: u8 = 0xd6;
 
     pub fn process(&self) -> ProgramResult {
-        // SAFETY: token account is validated by the token-2022 program
-        // after the current call finishes execution, the token acl program
-        // calls into token-2022 to freeze the token account, which gets type checked
-        // by the token-2022 program
-        if !crate::state::has_immutable_owner_extension(self.token_account) {
-            return Err(ABLError::ImmutableOwnerExtensionMissing.into());
-        }
-
         // Remaining accounts should be pairs of list and ab_wallet
         // Freeze logic is the inverse of thaw:
         // - thaw requires every list to approve,
