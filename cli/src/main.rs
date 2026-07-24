@@ -127,6 +127,7 @@ async fn process_create_list(
         token_acl_gate_client::accounts::ListConfig::find_pda(&payer.pubkey(), &seed).0;
     let ix = token_acl_gate_client::instructions::CreateListBuilder::new()
         .authority(payer.pubkey())
+        .payer(payer.pubkey())
         .seed(seed)
         .mode(mode)
         .list_config(list_config)
@@ -191,6 +192,7 @@ async fn process_add_wallet(
 ) -> Result<Signature, Box<dyn Error>> {
     let ix = token_acl_gate_client::instructions::AddWalletBuilder::new()
         .authority(payer.pubkey())
+        .payer(payer.pubkey())
         .list_config(*list_address)
         .wallet(*wallet_address)
         .wallet_entry(
