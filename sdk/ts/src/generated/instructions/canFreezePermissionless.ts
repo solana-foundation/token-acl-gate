@@ -7,6 +7,7 @@
  */
 
 import {
+  AccountRole,
   combineCodec,
   getStructDecoder,
   getStructEncoder,
@@ -100,6 +101,11 @@ export function getCanFreezePermissionlessInstructionDataCodec(): FixedSizeCodec
   );
 }
 
+export type CanFreezePermissionlessInstructionExtraArgs = {
+  /** Pairs of (ListConfig, WalletEntry) accounts. Must be passed as a flattened array. */
+  addresses: Array<Address>;
+};
+
 export type CanFreezePermissionlessInput<
   TAccountAuthority extends string = string,
   TAccountTokenAccount extends string = string,
@@ -114,6 +120,7 @@ export type CanFreezePermissionlessInput<
   owner: Address<TAccountOwner>;
   flagAccount: Address<TAccountFlagAccount>;
   extraMetas: Address<TAccountExtraMetas>;
+  addresses: CanFreezePermissionlessInstructionExtraArgs['addresses'];
 };
 
 export function getCanFreezePermissionlessInstruction<
@@ -162,6 +169,15 @@ export function getCanFreezePermissionlessInstruction<
     ResolvedAccount
   >;
 
+  // Original args.
+  const args = { ...input };
+
+  // Remaining accounts.
+  const remainingAccounts: AccountMeta[] = args.addresses.map((address) => ({
+    address,
+    role: AccountRole.READONLY,
+  }));
+
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
     accounts: [
@@ -171,6 +187,7 @@ export function getCanFreezePermissionlessInstruction<
       getAccountMeta(accounts.owner),
       getAccountMeta(accounts.flagAccount),
       getAccountMeta(accounts.extraMetas),
+      ...remainingAccounts,
     ],
     data: getCanFreezePermissionlessInstructionDataEncoder().encode({}),
     programAddress,

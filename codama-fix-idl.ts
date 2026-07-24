@@ -100,4 +100,9 @@ codama.update(setFixedAccountSizesVisitor());
 const updatedIdl = codama.getJson();
 const formattedIdl = JSON.stringify(JSON.parse(updatedIdl), null, 2);
 
-fs.writeFileSync(path.join(__dirname, "idl", "token_acl_gate_program.json"), formattedIdl);
+// Write to a temp file and rename so the committed IDL is never left
+// truncated if the write fails partway through.
+const idlPath = path.join(__dirname, "idl", "token_acl_gate_program.json");
+const tmpPath = `${idlPath}.tmp`;
+fs.writeFileSync(tmpPath, formattedIdl);
+fs.renameSync(tmpPath, idlPath);

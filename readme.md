@@ -76,6 +76,7 @@ This program serves as a gate program for the [Token ACL system](https://github.
 - Solana CLI 2.2.0+
 - Node.js 20.18.0+
 - pnpm 9.1.0+
+- codama-rs CLI (`cargo install codama-cli --version 0.8.0 --locked`) — used by `pnpm run generate-idl`; the version must match the `codama` crate version in [Cargo.toml](Cargo.toml)
 
 ### Building
 ```bash
@@ -93,8 +94,10 @@ cargo build --manifest-path=cli/Cargo.toml
 cargo install --path cli
 
 # Generate fixed IDL
-# This will generate initial codama IDL via the codama rust macros,
-# adds additional metadata via visitors and places the result in idl/
+# This extracts the initial codama IDL from the program source using the
+# codama-rs CLI (see Prerequisites), adds additional metadata via visitors
+# and places the result in idl/. Fails with a non-zero exit code if any
+# step cannot produce a valid IDL.
 pnpm run generate-idl
 
 # Generate SDKs

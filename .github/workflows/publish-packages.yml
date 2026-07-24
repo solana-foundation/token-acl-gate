@@ -38,6 +38,9 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/workflows/actions/install-dependencies
+        with:
+          rust-components: "rustfmt"
+          install-rust: true
 
       - name: Install TS dependencies
         shell: bash
@@ -51,6 +54,30 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Cache codama-cli
+        id: cache-codama
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/codama-rs
+          key: codama-cli-0.8.0-${{ runner.os }}
+
+      - name: Install codama-cli
+        if: steps.cache-codama.outputs.cache-hit != 'true'
+        working-directory: .
+        run: cargo install codama-cli --version 0.8.0 --locked
+
+      - name: Check committed IDL and SDKs match the program source
+        working-directory: .
+        run: |
+          pnpm run generate-idl
+          pnpm run generate-sdks
+          if [ -n "$(git status --porcelain -- idl/ sdk/ts/src/generated sdk/rust/src/generated)" ]; then
+            echo "::error::Committed IDL/SDKs are out of date. Run 'pnpm run generate-idl && pnpm run generate-sdks' and commit the result. Refusing to publish."
+            git status --porcelain -- idl/ sdk/ts/src/generated sdk/rust/src/generated
+            git diff -- idl/ sdk/ts/src/generated sdk/rust/src/generated
+            exit 1
+          fi
 
       - name: Create Changesets Pull Request or Trigger an npm Publish
         if: env.RELEASE_TYPE == 'regular'

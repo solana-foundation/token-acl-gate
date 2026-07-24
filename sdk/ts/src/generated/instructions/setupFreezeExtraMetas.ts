@@ -7,6 +7,7 @@
  */
 
 import {
+  AccountRole,
   combineCodec,
   getStructDecoder,
   getStructEncoder,
@@ -105,6 +106,11 @@ export function getSetupFreezeExtraMetasInstructionDataCodec(): FixedSizeCodec<
   );
 }
 
+export type SetupFreezeExtraMetasInstructionExtraArgs = {
+  /** Up to 5 ListConfig accounts owned by this program */
+  addresses: Array<Address>;
+};
+
 export type SetupFreezeExtraMetasInput<
   TAccountAuthority extends string = string,
   TAccountPayer extends string = string,
@@ -119,6 +125,7 @@ export type SetupFreezeExtraMetasInput<
   mint: Address<TAccountMint>;
   extraMetas: Address<TAccountExtraMetas>;
   systemProgram?: Address<TAccountSystemProgram>;
+  addresses: SetupFreezeExtraMetasInstructionExtraArgs['addresses'];
 };
 
 export function getSetupFreezeExtraMetasInstruction<
@@ -170,11 +177,20 @@ export function getSetupFreezeExtraMetasInstruction<
     ResolvedAccount
   >;
 
+  // Original args.
+  const args = { ...input };
+
   // Resolve default values.
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
   }
+
+  // Remaining accounts.
+  const remainingAccounts: AccountMeta[] = args.addresses.map((address) => ({
+    address,
+    role: AccountRole.READONLY,
+  }));
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
@@ -185,6 +201,7 @@ export function getSetupFreezeExtraMetasInstruction<
       getAccountMeta(accounts.mint),
       getAccountMeta(accounts.extraMetas),
       getAccountMeta(accounts.systemProgram),
+      ...remainingAccounts,
     ],
     data: getSetupFreezeExtraMetasInstructionDataEncoder().encode({}),
     programAddress,

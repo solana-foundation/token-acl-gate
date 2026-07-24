@@ -22,9 +22,9 @@
               "name": "discriminator",
               "docs": [],
               "type": {
-                "endian": "le",
+                "kind": "numberTypeNode",
                 "format": "u8",
-                "kind": "numberTypeNode"
+                "endian": "le"
               },
               "defaultValue": {
                 "kind": "numberValueNode",
@@ -52,9 +52,9 @@
               "name": "mode",
               "docs": [],
               "type": {
-                "endian": "le",
+                "kind": "numberTypeNode",
                 "format": "u8",
-                "kind": "numberTypeNode"
+                "endian": "le"
               }
             },
             {
@@ -62,9 +62,9 @@
               "name": "walletsCount",
               "docs": [],
               "type": {
-                "endian": "le",
+                "kind": "numberTypeNode",
                 "format": "u64",
-                "kind": "numberTypeNode"
+                "endian": "le"
               }
             }
           ]
@@ -94,9 +94,9 @@
               "name": "discriminator",
               "docs": [],
               "type": {
-                "endian": "le",
+                "kind": "numberTypeNode",
                 "format": "u8",
-                "kind": "numberTypeNode"
+                "endian": "le"
               },
               "defaultValue": {
                 "kind": "numberValueNode",
@@ -185,9 +185,9 @@
             "defaultValueStrategy": "omitted",
             "docs": [],
             "type": {
-              "endian": "le",
+              "kind": "numberTypeNode",
               "format": "u8",
-              "kind": "numberTypeNode"
+              "endian": "le"
             },
             "defaultValue": {
               "kind": "numberValueNode",
@@ -286,9 +286,9 @@
             "defaultValueStrategy": "omitted",
             "docs": [],
             "type": {
-              "endian": "le",
+              "kind": "numberTypeNode",
               "format": "u8",
-              "kind": "numberTypeNode"
+              "endian": "le"
             },
             "defaultValue": {
               "kind": "numberValueNode",
@@ -342,9 +342,9 @@
             "defaultValueStrategy": "omitted",
             "docs": [],
             "type": {
-              "endian": "le",
+              "kind": "numberTypeNode",
               "format": "u8",
-              "kind": "numberTypeNode"
+              "endian": "le"
             },
             "defaultValue": {
               "kind": "numberValueNode",
@@ -426,9 +426,9 @@
             "defaultValueStrategy": "omitted",
             "docs": [],
             "type": {
-              "endian": "le",
+              "kind": "numberTypeNode",
               "format": "u8",
-              "kind": "numberTypeNode"
+              "endian": "le"
             },
             "defaultValue": {
               "kind": "numberValueNode",
@@ -509,9 +509,9 @@
             "defaultValueStrategy": "omitted",
             "docs": [],
             "type": {
-              "endian": "le",
+              "kind": "numberTypeNode",
               "format": "u8",
-              "kind": "numberTypeNode"
+              "endian": "le"
             },
             "defaultValue": {
               "kind": "numberValueNode",
@@ -593,9 +593,9 @@
             "defaultValueStrategy": "omitted",
             "docs": [],
             "type": {
-              "endian": "le",
+              "kind": "numberTypeNode",
               "format": "u8",
-              "kind": "numberTypeNode"
+              "endian": "le"
             },
             "defaultValue": {
               "kind": "numberValueNode",
@@ -708,9 +708,9 @@
             "defaultValueStrategy": "omitted",
             "docs": [],
             "type": {
-              "endian": "le",
+              "kind": "numberTypeNode",
               "format": "u8",
-              "kind": "numberTypeNode"
+              "endian": "le"
             },
             "defaultValue": {
               "kind": "numberValueNode",
@@ -823,9 +823,9 @@
             "defaultValueStrategy": "omitted",
             "docs": [],
             "type": {
-              "endian": "le",
+              "kind": "numberTypeNode",
               "format": "u8",
-              "kind": "numberTypeNode"
+              "endian": "le"
             },
             "defaultValue": {
               "kind": "numberValueNode",
@@ -890,20 +890,20 @@
               "name": "allow"
             },
             {
-              "discriminator": 1,
               "kind": "enumEmptyVariantTypeNode",
-              "name": "unused"
+              "name": "unused",
+              "discriminator": 1
             },
             {
-              "discriminator": 2,
               "kind": "enumEmptyVariantTypeNode",
-              "name": "block"
+              "name": "block",
+              "discriminator": 2
             }
           ],
           "size": {
-            "endian": "le",
+            "kind": "numberTypeNode",
             "format": "u8",
-            "kind": "numberTypeNode"
+            "endian": "le"
           }
         }
       }
@@ -917,8 +917,8 @@
           {
             "kind": "constantPdaSeedNode",
             "type": {
-              "encoding": "utf8",
-              "kind": "stringTypeNode"
+              "kind": "stringTypeNode",
+              "encoding": "utf8"
             },
             "value": {
               "kind": "stringValueNode",
@@ -951,8 +951,8 @@
           {
             "kind": "constantPdaSeedNode",
             "type": {
-              "encoding": "utf8",
-              "kind": "stringTypeNode"
+              "kind": "stringTypeNode",
+              "encoding": "utf8"
             },
             "value": {
               "kind": "stringValueNode",
