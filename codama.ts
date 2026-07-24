@@ -41,7 +41,41 @@ codama.update(
         ),
       ],
     },
+    setupFreezeExtraMetas: {
+      arguments: {
+        addresses: {
+          type: arrayTypeNode(
+            publicKeyTypeNode(),
+            prefixedCountNode(numberTypeNode("u32")),
+          ),
+          docs: ["Up to 5 ListConfig accounts owned by this program"],
+        },
+      },
+      remainingAccounts: [
+        instructionRemainingAccountsNode(
+          argumentValueNode("addresses"),
+          { isSigner: false, isWritable: false },
+        ),
+      ],
+    },
     canThawPermissionless: {
+      arguments: {
+        addresses: {
+          type: arrayTypeNode(
+            publicKeyTypeNode(),
+            prefixedCountNode(numberTypeNode('u32'))
+          ),
+          docs: ['Pairs of (ListConfig, WalletEntry) accounts. Must be passed as a flattened array.'],
+        },
+      },
+      remainingAccounts: [
+        instructionRemainingAccountsNode(
+          argumentValueNode('addresses'),
+          { isSigner: false, isWritable: false }
+        ),
+      ],
+    },
+    canFreezePermissionless: {
       arguments: {
         addresses: {
           type: arrayTypeNode(
