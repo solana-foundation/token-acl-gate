@@ -19,7 +19,7 @@ const rustClientsDir = path.join(__dirname, "..", "sdk", "rust");
 const typescriptClientsDir = path.join(__dirname, "..", "sdk", "ts");
 
 const codama = createFromRoot(
-  require(path.join(__dirname, "idl", "token_acl_gate_program.json")),
+  require(path.join(__dirname, "target", "idl", "token_acl_gate_program.json")),
 );
 
 codama.update(
@@ -97,40 +97,7 @@ codama.update(
 
 codama.update(setFixedAccountSizesVisitor());
 
-function preserveConfigFiles() {
-  const filesToPreserve = [
-    "package.json",
-    "tsconfig.json",
-    ".npmignore",
-    "pnpm-lock.yaml",
-    "Cargo.toml",
-  ];
-  const preservedFiles = new Map();
+const updatedIdl = codama.getJson();
+const formattedIdl = JSON.stringify(JSON.parse(updatedIdl), null, 2);
 
-  filesToPreserve.forEach(filename => {
-    const filePath = path.join(typescriptClientsDir, filename);
-    const tempPath = path.join(typescriptClientsDir, `${filename}.temp`);
-
-    if (fs.existsSync(filePath)) {
-      fs.copyFileSync(filePath, tempPath);
-      preservedFiles.set(filename, tempPath);
-    }
-  });
-
-  return {
-    restore: () => {
-      preservedFiles.forEach((tempPath, filename) => {
-        const filePath = path.join(typescriptClientsDir, filename);
-        if (fs.existsSync(tempPath)) {
-          fs.copyFileSync(tempPath, filePath);
-          fs.unlinkSync(tempPath);
-        }
-      });
-    }
-  };
-}
-
-const configPreserver = preserveConfigFiles();
-
-codama.accept(renderJavaScriptVisitor("sdk/ts/src/generated", { formatCode: true }));
-codama.accept(renderRustVisitor("sdk/rust/src/generated", { crateFolder: "sdk/rust/", formatCode: true }));
+fs.writeFileSync(path.join(__dirname, "idl", "token_acl_gate_program.json"), formattedIdl);

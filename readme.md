@@ -92,6 +92,11 @@ cargo build --manifest-path=cli/Cargo.toml
 # Install CLI
 cargo install --path cli
 
+# Generate fixed IDL
+# This will generate initial codama IDL via the codama rust macros,
+# adds additional metadata via visitors and places the result in idl/
+pnpm run generate-idl
+
 # Generate SDKs
 pnpm run generate-sdks
 

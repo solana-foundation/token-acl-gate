@@ -11,8 +11,8 @@
     "build:program": "cargo build-sbf --manifest-path=program/Cargo.toml",
     "test": "cargo test --manifest-path=sdk/rust/Cargo.toml",
     "build:cli": "cargo build --manifest-path=cli/Cargo.toml",
-    "generate-sdks": "node -r tsx/cjs codama.ts",
-    "generate-idl": "cd program && cargo check --features idl",
+    "generate-sdks": "node -r tsx/cjs codama-generate-clients.ts",
+    "generate-idl": "cd program && cargo check --features idl && cd .. && node -r tsx/cjs codama-fix-idl.ts",
     "copy:test:fixtures": "cp target/deploy/token_acl_gate_program.so sdk/rust/tests/fixtures/"
   },
   "dependencies": {

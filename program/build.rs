@@ -22,7 +22,7 @@ fn generate_idl() -> Result<(), Box<dyn std::error::Error>> {
     formatted_json.push('\n');
 
     let project_root = Path::new(&manifest_dir).parent().unwrap();
-    let idl_dir = project_root.join("idl");
+    let idl_dir = project_root.join("target").join("idl");
     fs::create_dir_all(&idl_dir)?;
     let idl_path = idl_dir.join("token_acl_gate_program.json");
     fs::write(&idl_path, formatted_json)?;
