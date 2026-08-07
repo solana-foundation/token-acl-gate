@@ -39,7 +39,7 @@ impl CanThawPermissionless {
         let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.authority,
-            true,
+            false,
         ));
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.token_account,
@@ -98,7 +98,7 @@ impl Default for CanThawPermissionlessInstructionData {
 ///
 /// ### Accounts:
 ///
-///   0. `[signer]` authority
+///   0. `[]` authority
 ///   1. `[]` token_account
 ///   2. `[]` mint
 ///   3. `[]` owner
@@ -253,7 +253,7 @@ impl<'a, 'b> CanThawPermissionlessCpi<'a, 'b> {
         let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.authority.key,
-            true,
+            false,
         ));
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.token_account.key,
@@ -315,7 +315,7 @@ impl<'a, 'b> CanThawPermissionlessCpi<'a, 'b> {
 ///
 /// ### Accounts:
 ///
-///   0. `[signer]` authority
+///   0. `[]` authority
 ///   1. `[]` token_account
 ///   2. `[]` mint
 ///   3. `[]` owner

@@ -78,7 +78,7 @@ pub enum Instruction {
     /// where 0x08 is the first byte.
     ///
     /// Remaining accounts: pairs of (`ListConfig`, `WalletEntry`) accounts.
-    #[codama(account(name = "authority", signer))]
+    #[codama(account(name = "authority"))]
     #[codama(account(name = "token_account"))]
     #[codama(account(name = "mint"))]
     #[codama(account(name = "owner"))]
@@ -91,7 +91,7 @@ pub enum Instruction {
     /// where 0xd6 is the first byte.
     ///
     /// Remaining accounts: pairs of (`ListConfig`, `WalletEntry`) accounts.
-    #[codama(account(name = "authority", signer))]
+    #[codama(account(name = "authority"))]
     #[codama(account(name = "token_account"))]
     #[codama(account(name = "mint"))]
     #[codama(account(name = "owner"))]

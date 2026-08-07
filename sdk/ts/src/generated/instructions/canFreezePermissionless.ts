@@ -15,7 +15,6 @@ import {
   getU8Encoder,
   transformEncoder,
   type AccountMeta,
-  type AccountSignerMeta,
   type Address,
   type FixedSizeCodec,
   type FixedSizeDecoder,
@@ -24,9 +23,7 @@ import {
   type InstructionWithAccounts,
   type InstructionWithData,
   type ReadonlyAccount,
-  type ReadonlySignerAccount,
   type ReadonlyUint8Array,
-  type TransactionSigner,
 } from '@solana/kit';
 import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
@@ -51,8 +48,7 @@ export type CanFreezePermissionlessInstruction<
   InstructionWithAccounts<
     [
       TAccountAuthority extends string
-        ? ReadonlySignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
+        ? ReadonlyAccount<TAccountAuthority>
         : TAccountAuthority,
       TAccountTokenAccount extends string
         ? ReadonlyAccount<TAccountTokenAccount>
@@ -114,7 +110,7 @@ export type CanFreezePermissionlessInput<
   TAccountFlagAccount extends string = string,
   TAccountExtraMetas extends string = string,
 > = {
-  authority: TransactionSigner<TAccountAuthority>;
+  authority: Address<TAccountAuthority>;
   tokenAccount: Address<TAccountTokenAccount>;
   mint: Address<TAccountMint>;
   owner: Address<TAccountOwner>;
