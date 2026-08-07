@@ -4,3 +4,7 @@
 //!
 //! <https://github.com/codama-idl/codama>
 //!
+
+pub(crate) mod token_acl_gate_program;
+
+pub use self::token_acl_gate_program::TokenAclGateProgramError;

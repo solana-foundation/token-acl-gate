@@ -978,7 +978,116 @@
         ]
       }
     ],
-    "errors": []
+    "errors": [
+      {
+        "kind": "errorNode",
+        "name": "invalidInstruction",
+        "code": 4096,
+        "message": "Invalid instruction discriminator"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidAuthority",
+        "code": 4097,
+        "message": "Invalid authority"
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountBlocked",
+        "code": 4098,
+        "message": "Account is blocked by a list"
+      },
+      {
+        "kind": "errorNode",
+        "name": "notEnoughAccounts",
+        "code": 4099,
+        "message": "Not enough accounts provided"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidAccountData",
+        "code": 4100,
+        "message": "Invalid account data"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidSystemProgram",
+        "code": 4101,
+        "message": "Invalid system program"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidGatingProgram",
+        "code": 4102,
+        "message": "Invalid gating program"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidConfigAccount",
+        "code": 4103,
+        "message": "Invalid config account"
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountNotWritable",
+        "code": 4104,
+        "message": "Account is not writable"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidExtraMetasAccount",
+        "code": 4105,
+        "message": "Invalid extra account metas account"
+      },
+      {
+        "kind": "errorNode",
+        "name": "immutableOwnerExtensionMissing",
+        "code": 4106,
+        "message": "Token account is missing the immutable owner extension"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidData",
+        "code": 4107,
+        "message": "Invalid instruction data"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidTokenAclMintConfig",
+        "code": 4108,
+        "message": "Invalid token-acl mint config account"
+      },
+      {
+        "kind": "errorNode",
+        "name": "listNotEmpty",
+        "code": 4109,
+        "message": "List still contains wallet entries"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidRemainingAccounts",
+        "code": 4110,
+        "message": "Invalid remaining accounts"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidWalletEntry",
+        "code": 4111,
+        "message": "Invalid wallet entry account"
+      },
+      {
+        "kind": "errorNode",
+        "name": "invalidListConfig",
+        "code": 4112,
+        "message": "Invalid list config account"
+      },
+      {
+        "kind": "errorNode",
+        "name": "accountAllowed",
+        "code": 4113,
+        "message": "Account is allowed by every list"
+      }
+    ]
   },
   "additionalPrograms": []
 }
