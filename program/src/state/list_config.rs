@@ -26,7 +26,7 @@ impl ListConfig {
         match self.mode {
             0 => Mode::Allow,
             2 => Mode::Block,
-            _ => Mode::Unused
+            _ => Mode::Unused,
         }
     }
 
@@ -68,7 +68,7 @@ impl Discriminator for ListConfig {
 #[derive(codama::CodamaType)]
 #[repr(u8)]
 pub enum Mode {
-    Allow ,
+    Allow,
     // Previously AllowAllEoas, leaving placeholder for backwards compat
     Unused = 1,
     Block = 2,

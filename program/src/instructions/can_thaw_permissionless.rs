@@ -22,11 +22,10 @@ impl<'a> CanThawPermissionless<'a> {
     pub const DISCRIMINATOR: u8 = 0x8;
 
     pub fn process(&self) -> ProgramResult {
-        // SAFETY: token account is validated by the token-2022 program
-        // after the current call finishes execution, the token acl program
-        // calls into token-2022 to thaw the token account, which gets type checked
-        // by the token-2022 program
-        if !crate::state::has_immutable_owner_extension(self.token_account) {
+        // the helper validates that the account is a token-2022 token account
+        // with well-formed TLV data; malformed accounts are a controlled error
+        // instead of a panic or a false positive
+        if !crate::state::has_immutable_owner_extension(self.token_account)? {
             return Err(ABLError::ImmutableOwnerExtensionMissing.into());
         }
 
@@ -94,8 +93,8 @@ impl<'a> CanThawPermissionless<'a> {
                 } else {
                     Ok(())
                 }
-            },
-            _ => Err(ABLError::InvalidListConfig.into())
+            }
+            _ => Err(ABLError::InvalidListConfig.into()),
         }
     }
 }

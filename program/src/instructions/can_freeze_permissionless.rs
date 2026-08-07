@@ -85,7 +85,7 @@ impl<'a> CanFreezePermissionless<'a> {
                     WalletEntry::Missing => FreezeDecision::Skip,
                 },
             ),
-            _ => Err(ABLError::InvalidListConfig.into())
+            _ => Err(ABLError::InvalidListConfig.into()),
         }
     }
 

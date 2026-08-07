@@ -20,6 +20,7 @@ pinocchio-system = "0.3.0"
 pinocchio-log = "0.5.0"
 spl-discriminator = { workspace = true }
 spl-tlv-account-resolution = { workspace = true }
+spl-token-2022-interface = "2.0.0"
 
 token-acl-interface = { workspace = true }
 token-acl = { workspace = true, features = [
