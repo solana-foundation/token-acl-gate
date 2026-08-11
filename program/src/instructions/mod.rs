@@ -73,9 +73,9 @@ pub enum Instruction {
     #[codama(account(name = "system_program", default_value = program("system")))]
     SetupFreezeExtraMetas {} = 6,
 
-    /// Validates whether a wallet's token account can be thawed. This program uses 1 byte
-    /// instruction discriminators. The token-acl interface defines an 8 byte discriminator,
-    /// where 0x08 is the first byte.
+    /// Validates whether a wallet's token account can be thawed. This instruction requires
+    /// the complete 8-byte token-acl interface discriminator (first byte 0x08); the enum
+    /// discriminant only records the first byte for dispatch.
     ///
     /// Remaining accounts: pairs of (`ListConfig`, `WalletEntry`) accounts.
     #[codama(account(name = "authority"))]
@@ -86,9 +86,9 @@ pub enum Instruction {
     #[codama(account(name = "extra_metas"))]
     CanThawPermissionless {} = 8,
 
-    /// Validates whether a wallet's token account can be frozen. This program uses 1 byte
-    /// instruction discriminators. The token-acl interface defines an 8 byte discriminator,
-    /// where 0xd6 is the first byte.
+    /// Validates whether a wallet's token account can be frozen. This instruction requires
+    /// the complete 8-byte token-acl interface discriminator (first byte 0xd6); the enum
+    /// discriminant only records the first byte for dispatch.
     ///
     /// Remaining accounts: pairs of (`ListConfig`, `WalletEntry`) accounts.
     #[codama(account(name = "authority"))]

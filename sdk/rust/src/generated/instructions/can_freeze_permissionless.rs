@@ -8,7 +8,7 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
-pub const CAN_FREEZE_PERMISSIONLESS_DISCRIMINATOR: u8 = 214;
+pub const CAN_FREEZE_PERMISSIONLESS_DISCRIMINATOR: [u8; 8] = [214, 141, 109, 75, 248, 1, 45, 29];
 
 /// Accounts.
 #[derive(Debug)]
@@ -75,12 +75,14 @@ impl CanFreezePermissionless {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CanFreezePermissionlessInstructionData {
-    discriminator: u8,
+    discriminator: [u8; 8],
 }
 
 impl CanFreezePermissionlessInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: 214 }
+        Self {
+            discriminator: [214, 141, 109, 75, 248, 1, 45, 29],
+        }
     }
 
     pub(crate) fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {

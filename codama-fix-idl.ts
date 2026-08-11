@@ -3,7 +3,10 @@ import { renderVisitor as renderRustVisitor } from "@codama/renderers-rust";
 import {
   argumentValueNode,
   arrayTypeNode,
+  bytesTypeNode,
+  bytesValueNode,
   createFromRoot,
+  fixedSizeTypeNode,
   instructionRemainingAccountsNode,
   numberTypeNode,
   prefixedCountNode,
@@ -60,6 +63,13 @@ codama.update(
     },
     canThawPermissionless: {
       arguments: {
+        // the program dispatches on the first byte but requires the complete
+        // 8-byte token-acl interface discriminator:
+        // sha256("efficient-allow-block-list-standard:can-thaw-permissionless")[..8]
+        discriminator: {
+          type: fixedSizeTypeNode(bytesTypeNode(), 8),
+          defaultValue: bytesValueNode('base16', '08afa981894a3df1'),
+        },
         addresses: {
           type: arrayTypeNode(
             publicKeyTypeNode(),
@@ -77,6 +87,13 @@ codama.update(
     },
     canFreezePermissionless: {
       arguments: {
+        // the program dispatches on the first byte but requires the complete
+        // 8-byte token-acl interface discriminator:
+        // sha256("efficient-allow-block-list-standard:can-freeze-permissionless")[..8]
+        discriminator: {
+          type: fixedSizeTypeNode(bytesTypeNode(), 8),
+          defaultValue: bytesValueNode('base16', 'd68d6d4bf8012d1d'),
+        },
         addresses: {
           type: arrayTypeNode(
             publicKeyTypeNode(),

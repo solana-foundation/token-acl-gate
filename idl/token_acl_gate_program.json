@@ -708,13 +708,16 @@
             "defaultValueStrategy": "omitted",
             "docs": [],
             "type": {
-              "kind": "numberTypeNode",
-              "format": "u8",
-              "endian": "le"
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
             },
             "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 8
+              "kind": "bytesValueNode",
+              "data": "08afa981894a3df1",
+              "encoding": "base16"
             }
           }
         ],
@@ -823,13 +826,16 @@
             "defaultValueStrategy": "omitted",
             "docs": [],
             "type": {
-              "kind": "numberTypeNode",
-              "format": "u8",
-              "endian": "le"
+              "kind": "fixedSizeTypeNode",
+              "size": 8,
+              "type": {
+                "kind": "bytesTypeNode"
+              }
             },
             "defaultValue": {
-              "kind": "numberValueNode",
-              "number": 214
+              "kind": "bytesValueNode",
+              "data": "d68d6d4bf8012d1d",
+              "encoding": "base16"
             }
           }
         ],
