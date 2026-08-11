@@ -54,7 +54,7 @@ impl<'a> CanThawPermissionless<'a> {
         }
 
         let list_data: &[u8] = &list.try_borrow_data()?;
-        let list_config = unsafe { load::<ListConfig>(list_data)? };
+        let list_config = load::<ListConfig>(list_data)?;
 
         // 3 operation modes
         // allow: only wallets that have been allowlisted can thaw, requires previously created ABWallet account
@@ -63,9 +63,8 @@ impl<'a> CanThawPermissionless<'a> {
         match list_config.get_mode() {
             crate::Mode::Allow => {
                 let ab_wallet_data: &[u8] = &wallet_entry.try_borrow_data()?;
-                let wallet = unsafe {
-                    load::<WalletEntry>(ab_wallet_data).map_err(|_| ABLError::AccountBlocked)?
-                };
+                let wallet =
+                    load::<WalletEntry>(ab_wallet_data).map_err(|_| ABLError::AccountBlocked)?;
 
                 if !wallet_entry.is_owned_by(&crate::ID) || wallet.list_config.ne(list.key()) {
                     return Err(ABLError::InvalidWalletEntry.into());
@@ -75,7 +74,7 @@ impl<'a> CanThawPermissionless<'a> {
             }
             crate::Mode::Block => {
                 let ab_wallet_data: &[u8] = &wallet_entry.try_borrow_data()?;
-                let res = unsafe { load::<WalletEntry>(ab_wallet_data) };
+                let res = load::<WalletEntry>(ab_wallet_data);
 
                 // either the block exists and is owned by this program
                 // or it doesn't exist. We want to avoid PDA derivation to waste more CUs

@@ -1,9 +1,10 @@
+use bytemuck::{Pod, Zeroable};
 use codama::CodamaAccount;
 use pinocchio::{program_error::ProgramError, pubkey::Pubkey, ProgramResult};
 
-use super::{Discriminator, Transmutable};
+use super::{assert_pod_layout, Discriminator, Transmutable};
 
-#[derive(CodamaAccount)]
+#[derive(CodamaAccount, Clone, Copy, Pod, Zeroable)]
 #[repr(C)]
 #[codama(discriminator(field = "discriminator"))]
 #[codama(seed(type = string, value = "list_config"))]
@@ -56,6 +57,8 @@ impl ListConfig {
 impl Transmutable for ListConfig {
     const LEN: usize = 1 + 32 + 32 + 8 + 1;
 }
+
+assert_pod_layout!(ListConfig);
 
 impl Discriminator for ListConfig {
     const DISCRIMINATOR: u8 = 0x01;

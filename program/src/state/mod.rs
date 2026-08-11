@@ -20,13 +20,19 @@ pub trait Discriminator {
     fn is_initialized(&self) -> bool;
 }
 
+macro_rules! assert_pod_layout {
+    ($ty:ty) => {
+        const _: () = {
+            assert!(core::mem::size_of::<$ty>() == <$ty as $crate::Transmutable>::LEN);
+            assert!(core::mem::align_of::<$ty>() == 1);
+        };
+    };
+}
+pub(crate) use assert_pod_layout;
+
 /// Return a reference for an initialized `T` from the given bytes.
-///
-/// # Safety
-///
-/// The caller must ensure that `bytes` contains a valid representation of `T`.
 #[inline(always)]
-pub unsafe fn load<T: Discriminator + Transmutable>(bytes: &[u8]) -> Result<&T, ABLError> {
+pub fn load<T: bytemuck::Pod + Discriminator + Transmutable>(bytes: &[u8]) -> Result<&T, ABLError> {
     load_unchecked(bytes).and_then(|t: &T| {
         // checks if the data is initialized
         if t.is_initialized() {
@@ -37,13 +43,9 @@ pub unsafe fn load<T: Discriminator + Transmutable>(bytes: &[u8]) -> Result<&T, 
     })
 }
 
-/// Return a reference for an initialized `T` from the given bytes.
-///
-/// # Safety
-///
-/// The caller must ensure that `bytes` contains a valid representation of `T`.
+/// Return a mutable reference for an initialized `T` from the given bytes.
 #[inline(always)]
-pub unsafe fn load_mut<T: Discriminator + Transmutable>(
+pub fn load_mut<T: bytemuck::Pod + Discriminator + Transmutable>(
     bytes: &mut [u8],
 ) -> Result<&mut T, ABLError> {
     load_mut_unchecked(bytes).and_then(|t: &mut T| {
@@ -59,31 +61,25 @@ pub unsafe fn load_mut<T: Discriminator + Transmutable>(
 /// Return a `T` reference from the given bytes.
 ///
 /// This function does not check if the data is initialized.
-///
-/// # Safety
-///
-/// The caller must ensure that `bytes` contains a valid representation of `T`.
 #[inline(always)]
-pub unsafe fn load_unchecked<T: Transmutable>(bytes: &[u8]) -> Result<&T, ABLError> {
+pub fn load_unchecked<T: bytemuck::Pod + Transmutable>(bytes: &[u8]) -> Result<&T, ABLError> {
     if bytes.len() != T::LEN {
         return Err(ABLError::InvalidAccountData);
     }
-    Ok(&*(bytes.as_ptr() as *const T))
+    bytemuck::try_from_bytes(bytes).map_err(|_| ABLError::InvalidAccountData)
 }
 
 /// Return a mutable `T` reference from the given bytes.
 ///
 /// This function does not check if the data is initialized.
-///
-/// # Safety
-///
-/// The caller must ensure that `bytes` contains a valid representation of `T`.
 #[inline(always)]
-pub unsafe fn load_mut_unchecked<T: Transmutable>(bytes: &mut [u8]) -> Result<&mut T, ABLError> {
+pub fn load_mut_unchecked<T: bytemuck::Pod + Transmutable>(
+    bytes: &mut [u8],
+) -> Result<&mut T, ABLError> {
     if bytes.len() != T::LEN {
         return Err(ABLError::InvalidAccountData);
     }
-    Ok(&mut *(bytes.as_mut_ptr() as *mut T))
+    bytemuck::try_from_bytes_mut(bytes).map_err(|_| ABLError::InvalidAccountData)
 }
 
 pub const TOKEN_2022_PROGRAM_ID: Pubkey =

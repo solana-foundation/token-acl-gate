@@ -124,7 +124,7 @@ impl<'a> SetupExtraMetas<'a> {
             if !account.is_owned_by(&crate::ID) {
                 return Err(ABLError::InvalidConfigAccount.into());
             }
-            let _ = unsafe { load::<ListConfig>(&account.try_borrow_data()?)? };
+            let _ = load::<ListConfig>(&account.try_borrow_data()?)?;
             lists[i] = Some(account.key());
             i += 1;
         }

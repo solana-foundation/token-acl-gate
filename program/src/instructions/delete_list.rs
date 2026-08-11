@@ -36,7 +36,7 @@ impl<'a> DeleteList<'a> {
     pub fn process(&self) -> ProgramResult {
         {
             let list_config =
-                unsafe { load::<ListConfig>(self.list_config.borrow_data_unchecked())? };
+                load::<ListConfig>(unsafe { self.list_config.borrow_data_unchecked() })?;
 
             if list_config.authority.ne(self.authority.key()) {
                 return Err(ABLError::InvalidAuthority.into());

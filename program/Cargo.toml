@@ -13,7 +13,7 @@ name = "token_acl_gate_program"
 no-entrypoint = []
 
 [dependencies]
-bytemuck = "1.23.0"
+bytemuck = { version = "1.23.0", features = ["derive"] }
 pinocchio = "0.9.0"
 pinocchio-pubkey = "0.3.0"
 pinocchio-system = "0.3.0"

@@ -67,7 +67,7 @@ impl<'a> CanFreezePermissionless<'a> {
         }
 
         let list_data: &[u8] = &list.try_borrow_data()?;
-        let list_config = unsafe { load::<ListConfig>(list_data)? };
+        let list_config = load::<ListConfig>(list_data)?;
 
         // Freeze semantics are the inverse of thaw:
         // - Allow: freeze if wallet is NOT on the list
@@ -100,7 +100,7 @@ impl<'a> CanFreezePermissionless<'a> {
         }
 
         let ab_wallet_data: &[u8] = &wallet_entry.try_borrow_data()?;
-        let res = unsafe { load::<WalletEntryState>(ab_wallet_data) };
+        let res = load::<WalletEntryState>(ab_wallet_data);
 
         match res {
             Ok(wallet) => {
