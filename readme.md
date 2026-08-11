@@ -69,6 +69,36 @@ This program serves as a gate program for the [Token ACL system](https://github.
 5. Enable the permissionless thaw and/or freeze operations
 6. The Token ACL program will call this gate program during thaw/freeze operations
 
+### Allow Lists Require `DefaultAccountState::Frozen`
+
+An allow list on the thaw policy only restricts token accounts that are
+**created frozen**. Token-2022 copies the mint's `DefaultAccountState` into
+every new token account, and an account created `Initialized` is already
+usable — Token ACL's thaw path returns before calling the gate, and ordinary
+transfers never invoke Token ACL or this program.
+
+- If the mint's `DefaultAccountState` is not `Frozen`, an installed allow
+  list **does not restrict newly created accounts**. Anyone (including an
+  allowlisted holder) can create and fund an unlisted wallet's account, which
+  can then transfer onward without any gate decision. The setup path
+  deliberately allows this state so existing mints can migrate to ACL; the
+  CLI prints a warning when it detects it.
+- Set `DefaultAccountState` to `Frozen` **before** relying on an allow list
+  to restrict new holders.
+
+### Adopting ACL on an Existing Mint Is a Migration
+
+Updating `DefaultAccountState` to `Frozen` is **not retroactive**: it only
+affects token accounts initialized after the update. Accounts that already
+exist as `Initialized` never need a gated thaw and keep transferring normally
+after ACL adoption.
+
+Before relying on an allow-list policy for pre-existing balances, issuers
+must enumerate the mint's token accounts and freeze (or otherwise migrate)
+every `Initialized` account whose owner is not allowed. Until that sweep is
+complete, the allow list only protects accounts created after
+`DefaultAccountState::Frozen` was set.
+
 ## Development
 
 ### Prerequisites

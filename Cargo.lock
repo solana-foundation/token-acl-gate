@@ -7289,6 +7289,7 @@ dependencies = [
  "solana-remote-wallet",
  "solana-signature",
  "solana-transaction",
+ "spl-token-2022-interface",
  "token-acl-client",
  "token-acl-gate-client",
  "token-acl-interface",

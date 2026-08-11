@@ -27,12 +27,83 @@ struct Config {
     verbose: bool,
 }
 
+/// Best-effort preflight for the thaw-side setup: an Allow list only
+/// restricts token accounts that are created Frozen, so surface the two
+/// operational hazards of installing one — a mint whose DefaultAccountState
+/// is not Frozen (new accounts start usable and never need a gated thaw),
+/// and pre-existing Initialized accounts (freezing the default is not
+/// retroactive). Never blocks the setup: this exists to support migrating
+/// existing mints, and RPC or decoding failures are ignored.
+async fn warn_if_allow_list_policy_not_enforcing(
+    rpc_client: &Arc<RpcClient>,
+    mint_address: &Pubkey,
+    lists: &[Pubkey],
+) {
+    const MODE_ALLOW: u8 = 0;
+
+    let mut has_allow_list = false;
+    let Ok(accounts) = rpc_client.get_multiple_accounts(lists).await else {
+        return;
+    };
+
+    for account in accounts {
+        let Some(acc) = account else {
+            return;
+        };
+        let Ok(config) = token_acl_gate_client::accounts::ListConfig::from_bytes(&acc.data)
+        else {
+            return;
+        };
+        if config.mode == MODE_ALLOW {
+            has_allow_list = true;
+            break;
+        }
+    }
+    if !has_allow_list {
+        return;
+    }
+
+    let Ok(mint_account) = rpc_client.get_account(mint_address).await else {
+        return;
+    };
+    let default_is_frozen = spl_token_2022_interface::extension::PodStateWithExtensions::<
+        spl_token_2022_interface::pod::PodMint,
+    >::unpack(&mint_account.data)
+    .ok()
+    .and_then(|mint| {
+        spl_token_2022_interface::extension::BaseStateWithExtensions::get_extension::<
+            spl_token_2022_interface::extension::default_account_state::DefaultAccountState,
+        >(&mint)
+        .ok()
+        .map(|ext| ext.state == spl_token_2022_interface::state::AccountState::Frozen as u8)
+    })
+    .unwrap_or(false);
+
+    if !default_is_frozen {
+        eprintln!(
+            "WARNING: this thaw policy contains an Allow list, but the mint's \
+             DefaultAccountState is not Frozen. New token accounts are created \
+             usable and never require a gated thaw, so the allow list does NOT \
+             restrict them. Set DefaultAccountState to Frozen to activate the \
+             allow list for newly created accounts."
+        );
+    }
+    eprintln!(
+        "NOTE: DefaultAccountState::Frozen only applies to token accounts created \
+         after it is set. Token accounts that already exist as Initialized remain \
+         usable without a gated thaw - freeze or migrate unlisted holders before \
+         relying on the allow list for pre-existing balances."
+    );
+}
+
 async fn process_setup_extra_metas(
     rpc_client: &Arc<RpcClient>,
     payer: &Arc<dyn Signer>,
     mint_address: &Pubkey,
     lists: &[Pubkey],
 ) -> Result<Signature, Box<dyn Error>> {
+    warn_if_allow_list_policy_not_enforcing(rpc_client, mint_address, lists).await;
+
     let token_acl_mint_config = token_acl_client::accounts::MintConfig::find_pda(mint_address).0;
     let extra_metas = token_acl_interface::get_thaw_extra_account_metas_address(
         mint_address,
