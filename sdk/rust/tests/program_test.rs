@@ -31,12 +31,31 @@ impl Default for TestContext {
     }
 }
 
+/// Fails fast when the committed gate-program fixture differs from a locally
+/// built artifact, so tests never silently pass against outdated code. When
+/// no build artifact exists (fresh clone without the Solana toolchain), the
+/// committed fixture is used as-is — CI keeps that one honest by rebuilding
+/// and diffing it on every run.
+fn assert_gate_fixture_is_fresh(current_dir: &std::path::Path) {
+    let built = current_dir.join("../../target/deploy/token_acl_gate_program.so");
+    let fixture = current_dir.join("tests/fixtures/token_acl_gate_program.so");
+    if let (Ok(built), Ok(fixture)) = (std::fs::read(&built), std::fs::read(&fixture)) {
+        assert!(
+            built == fixture,
+            "stale test fixture: target/deploy/token_acl_gate_program.so differs from \
+             tests/fixtures/token_acl_gate_program.so — run `pnpm run copy:test:fixtures`"
+        );
+    }
+}
+
 impl TestContext {
     pub fn new() -> Self {
         let mut vm = LiteSVM::new();
 
         // current path
         let current_dir = std::env::current_dir().unwrap();
+
+        assert_gate_fixture_is_fresh(&current_dir);
 
         let res = vm.add_program_from_file(
             token_acl::ID,

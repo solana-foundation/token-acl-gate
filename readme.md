@@ -73,7 +73,7 @@ This program serves as a gate program for the [Token ACL system](https://github.
 
 ### Prerequisites
 - Rust 1.89 (pinned in [rust-toolchain.toml](rust-toolchain.toml))
-- Solana CLI (Agave) 3.x — the dependency tree requires edition2024 support, so `cargo build-sbf` needs platform-tools v1.52+ (rustc 1.89)
+- Solana CLI (Agave) 3.x — CI pins 3.1.11, and the committed test fixture must be built with that same version to pass the CI staleness check; the dependency tree requires edition2024 support, so `cargo build-sbf` needs platform-tools v1.52+ (rustc 1.89)
 - Node.js 20.18.0+
 - pnpm 10+
 - codama-rs CLI (`cargo install codama-cli --version 0.8.0 --locked`) — used by `pnpm run generate-idl`; the version must match the `codama` crate version in [Cargo.toml](Cargo.toml)

@@ -48,13 +48,17 @@ jobs:
         if: steps.cache-codama.outputs.cache-hit != 'true'
         run: cargo install codama-cli --version 0.8.0 --locked
 
-      - name: Check committed IDL and SDKs match the program source
+      - name: Check committed IDL, SDKs and test fixture match the program source
         run: |
           pnpm run generate-idl
           pnpm run generate-sdks
-          if [ -n "$(git status --porcelain -- idl/ sdk/ts/src/generated sdk/rust/src/generated)" ]; then
-            echo "::error::Committed IDL/SDKs are out of date. Run 'pnpm run generate-idl && pnpm run generate-sdks' and commit the result."
-            git status --porcelain -- idl/ sdk/ts/src/generated sdk/rust/src/generated
+          # the earlier copy:test:fixtures step overwrote the committed fixture
+          # with the freshly built program, so a dirty fixture path here means
+          # the committed binary was not built from the current source (with
+          # the CI-pinned Agave version)
+          if [ -n "$(git status --porcelain -- idl/ sdk/ts/src/generated sdk/rust/src/generated sdk/rust/tests/fixtures/token_acl_gate_program.so)" ]; then
+            echo "::error::Committed IDL/SDKs/test fixture are out of date. Run 'pnpm run generate-idl && pnpm run generate-sdks && pnpm run copy:test:fixtures' and commit the result."
+            git status --porcelain -- idl/ sdk/ts/src/generated sdk/rust/src/generated sdk/rust/tests/fixtures/token_acl_gate_program.so
             git diff -- idl/ sdk/ts/src/generated sdk/rust/src/generated
             exit 1
           fi
