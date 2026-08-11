@@ -31,6 +31,9 @@ impl<'a> AddWallet<'a> {
         if !self.authority.is_signer() || list_config.authority.ne(self.authority.key()) {
             return Err(ABLError::InvalidAuthority.into());
         }
+        
+        list_config.increment_wallets_count()?;
+        let _ = list_config;
 
         let lamports = Rent::get()?.minimum_balance(WalletEntry::LEN);
 
@@ -71,8 +74,6 @@ impl<'a> AddWallet<'a> {
         wallet_entry.discriminator = WalletEntry::DISCRIMINATOR;
         wallet_entry.wallet_address = *self.wallet.key();
         wallet_entry.list_config = *self.list_config.key();
-
-        list_config.increment_wallets_count()?;
 
         Ok(())
     }
