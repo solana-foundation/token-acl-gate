@@ -31,7 +31,7 @@ impl<'a> AddWallet<'a> {
         if !self.authority.is_signer() || list_config.authority.ne(self.authority.key()) {
             return Err(ABLError::InvalidAuthority.into());
         }
-        
+
         list_config.increment_wallets_count()?;
         let _ = list_config;
 

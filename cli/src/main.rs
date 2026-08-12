@@ -50,8 +50,7 @@ async fn warn_if_allow_list_policy_not_enforcing(
         let Some(acc) = account else {
             return;
         };
-        let Ok(config) = token_acl_gate_client::accounts::ListConfig::from_bytes(&acc.data)
-        else {
+        let Ok(config) = token_acl_gate_client::accounts::ListConfig::from_bytes(&acc.data) else {
             return;
         };
         if config.mode == MODE_ALLOW {
