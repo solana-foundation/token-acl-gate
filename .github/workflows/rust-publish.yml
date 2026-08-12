@@ -28,7 +28,7 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
@@ -54,7 +54,7 @@ jobs:
 
       - name: Cache codama-cli
         id: cache-codama
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.cargo/bin/codama-rs
           key: codama-cli-0.8.0-${{ runner.os }}
@@ -89,7 +89,7 @@ jobs:
           git push origin --tags
 
       - name: Authenticate with crates.io
-        uses: rust-lang/crates-io-auth-action@v1
+        uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1
         id: auth
 
       - name: Publish token-acl-gate-client to crates.io
@@ -116,7 +116,7 @@ jobs:
 
       - name: Create GitHub Release
         if: ${{ github.event.inputs.create-github-release == 'true' }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
