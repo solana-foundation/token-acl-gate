@@ -7230,9 +7230,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "token-acl"
-version = "0.2.3"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "992ebb178e45245cb0e1da8174be45dfd4df99e931b5b8f6e9001a5f65119ba2"
+checksum = "76ed414091af0e3be65595de0ffa3d0aa90cd5d8349f173895703140a24a7c30"
 dependencies = [
  "bytemuck",
  "solana-cpi",
@@ -7249,9 +7249,9 @@ dependencies = [
 
 [[package]]
 name = "token-acl-client"
-version = "0.2.3"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "493c0311bedfeb5d2acc778d805e413d992652a838f1ee24be444ccac3d19ef9"
+checksum = "dfe33134a84fc6ea08bd8015bed96e37eb1af8bf7b5cbdf417cbb41a288cbbd1"
 dependencies = [
  "borsh",
  "num-derive",
@@ -7346,9 +7346,9 @@ dependencies = [
 
 [[package]]
 name = "token-acl-interface"
-version = "0.2.3"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20091e86e01bed85f60d6f194b5715dde4dbcaacd56473901bf93fc39de3e92a"
+checksum = "2070ac262ec458baea2ad8f99faea0554add00e49ed4b7acde8d028fbd37e2d1"
 dependencies = [
  "num-traits",
  "solana-account-info",

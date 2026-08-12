@@ -43,6 +43,6 @@ spl-pod = "=0.7.2"
 spl-associated-token-account-interface = "=2.0.0"
 codama = "0.8.0"
 serde_json = "1"
-token-acl-interface = { version = "0.2.3" }
-token-acl-client = { version = "0.2.3" }
-token-acl = { version = "0.2.3", features = ["no-entrypoint",] }
+token-acl-interface = { version = "0.3.0" }
+token-acl-client = { version = "0.3.0" }
+token-acl = { version = "0.3.0", features = ["no-entrypoint",] }
