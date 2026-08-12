@@ -99,8 +99,10 @@ impl<'a> SetupExtraMetas<'a> {
             return Err(ABLError::InvalidExtraMetasAccount.into());
         }
 
-        let (expected_mint_config_pda, _) =
-            find_program_address(&[b"MINT_CONFIG", self.mint.key()], token_acl_interface::TOKEN_ACL_ID.as_array());
+        let (expected_mint_config_pda, _) = find_program_address(
+            &[b"MINT_CONFIG", self.mint.key()],
+            token_acl_interface::TOKEN_ACL_ID.as_array(),
+        );
         if expected_mint_config_pda
             .iter()
             .ne(self.token_acl_mint_config.key())
