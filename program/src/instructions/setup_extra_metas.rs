@@ -103,10 +103,7 @@ impl<'a> SetupExtraMetas<'a> {
             &[b"MINT_CONFIG", self.mint.key()],
             token_acl_interface::TOKEN_ACL_ID.as_array(),
         );
-        if expected_mint_config_pda
-            .iter()
-            .ne(self.token_acl_mint_config.key())
-        {
+        if expected_mint_config_pda != *self.token_acl_mint_config.key() {
             return Err(ABLError::InvalidTokenAclMintConfig)?;
         }
 
