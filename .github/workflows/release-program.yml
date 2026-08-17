@@ -9,8 +9,8 @@ name: Release Program
 #     and a human imports it into the Squads transaction builder. The CI
 #     keypair is fee payer / buffer writer only and needs no Squads membership.
 #
-# Secrets (DEPLOYER_KEYPAIR, RPC_URL, SQUADS_VAULT, SQUADS_MULTISIG) come from
-# Doppler via OIDC.
+# Secrets (DEPLOYER_KEYPAIR, HELIUS_API_KEY, SQUADS_VAULT, SQUADS_MULTISIG)
+# come from Doppler via OIDC.
 on:
   workflow_dispatch:
     inputs:
@@ -69,14 +69,23 @@ jobs:
           auth-method: oidc
           doppler-identity-id: ${{ vars.DOPPLER_SERVICE_IDENTITY_ID }}
           doppler-project: token-acl
-          doppler-config: ${{ inputs.network == 'mainnet' && 'prd_github' || 'stg_github' }}
+          doppler-config: ${{ inputs.network == 'mainnet' && 'prd' || 'stg' }}
           inject-env-vars: true
+
+      # Compose the network-specific RPC endpoint from the Helius API key;
+      # every downstream step consumes it as RPC_URL.
+      - name: Compose Helius RPC URL
+        run: |
+          : "${HELIUS_API_KEY:?Set HELIUS_API_KEY in Doppler}"
+          FULL_URL="https://${{ inputs.network }}.helius-rpc.com/?api-key=${HELIUS_API_KEY}"
+          echo "::add-mask::$FULL_URL"
+          echo "RPC_URL=$FULL_URL" >> "$GITHUB_ENV"
 
       - if: inputs.network == 'mainnet'
         name: Validate Squads config
         run: |
-          : "${SQUADS_VAULT:?Set SQUADS_VAULT in Doppler prd_github}"
-          : "${SQUADS_MULTISIG:?Set SQUADS_MULTISIG in Doppler prd_github}"
+          : "${SQUADS_VAULT:?Set SQUADS_VAULT in Doppler prd}"
+          : "${SQUADS_MULTISIG:?Set SQUADS_MULTISIG in Doppler prd}"
 
       - name: Materialize deployer keypair
         run: |
