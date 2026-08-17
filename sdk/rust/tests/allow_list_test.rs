@@ -171,10 +171,15 @@ mod freeze {
 
         match res {
             Err(FailedTransactionMetadata { err, meta: _ }) => {
-                // 15 = 0xF = InvalidWalletEntry
                 assert_eq!(
                     err,
-                    InstructionError(0, solana_transaction::InstructionError::Custom(15))
+                    InstructionError(
+                        0,
+                        solana_transaction::InstructionError::Custom(
+                            token_acl_gate_client::errors::TokenAclGateProgramError::InvalidWalletEntry
+                                as u32
+                        )
+                    )
                 );
             }
             other => panic!("unexpected result: {:?}", other),

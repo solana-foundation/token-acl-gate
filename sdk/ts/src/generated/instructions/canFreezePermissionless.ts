@@ -7,14 +7,16 @@
  */
 
 import {
+  AccountRole,
   combineCodec,
+  fixDecoderSize,
+  fixEncoderSize,
+  getBytesDecoder,
+  getBytesEncoder,
   getStructDecoder,
   getStructEncoder,
-  getU8Decoder,
-  getU8Encoder,
   transformEncoder,
   type AccountMeta,
-  type AccountSignerMeta,
   type Address,
   type FixedSizeCodec,
   type FixedSizeDecoder,
@@ -23,17 +25,19 @@ import {
   type InstructionWithAccounts,
   type InstructionWithData,
   type ReadonlyAccount,
-  type ReadonlySignerAccount,
   type ReadonlyUint8Array,
-  type TransactionSigner,
 } from '@solana/kit';
 import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const CAN_FREEZE_PERMISSIONLESS_DISCRIMINATOR = 214;
+export const CAN_FREEZE_PERMISSIONLESS_DISCRIMINATOR = new Uint8Array([
+  214, 141, 109, 75, 248, 1, 45, 29,
+]);
 
 export function getCanFreezePermissionlessDiscriminatorBytes() {
-  return getU8Encoder().encode(CAN_FREEZE_PERMISSIONLESS_DISCRIMINATOR);
+  return fixEncoderSize(getBytesEncoder(), 8).encode(
+    CAN_FREEZE_PERMISSIONLESS_DISCRIMINATOR
+  );
 }
 
 export type CanFreezePermissionlessInstruction<
@@ -50,8 +54,7 @@ export type CanFreezePermissionlessInstruction<
   InstructionWithAccounts<
     [
       TAccountAuthority extends string
-        ? ReadonlySignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
+        ? ReadonlyAccount<TAccountAuthority>
         : TAccountAuthority,
       TAccountTokenAccount extends string
         ? ReadonlyAccount<TAccountTokenAccount>
@@ -72,13 +75,15 @@ export type CanFreezePermissionlessInstruction<
     ]
   >;
 
-export type CanFreezePermissionlessInstructionData = { discriminator: number };
+export type CanFreezePermissionlessInstructionData = {
+  discriminator: ReadonlyUint8Array;
+};
 
 export type CanFreezePermissionlessInstructionDataArgs = {};
 
 export function getCanFreezePermissionlessInstructionDataEncoder(): FixedSizeEncoder<CanFreezePermissionlessInstructionDataArgs> {
   return transformEncoder(
-    getStructEncoder([['discriminator', getU8Encoder()]]),
+    getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
     (value) => ({
       ...value,
       discriminator: CAN_FREEZE_PERMISSIONLESS_DISCRIMINATOR,
@@ -87,7 +92,9 @@ export function getCanFreezePermissionlessInstructionDataEncoder(): FixedSizeEnc
 }
 
 export function getCanFreezePermissionlessInstructionDataDecoder(): FixedSizeDecoder<CanFreezePermissionlessInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
+  ]);
 }
 
 export function getCanFreezePermissionlessInstructionDataCodec(): FixedSizeCodec<
@@ -100,6 +107,11 @@ export function getCanFreezePermissionlessInstructionDataCodec(): FixedSizeCodec
   );
 }
 
+export type CanFreezePermissionlessInstructionExtraArgs = {
+  /** Pairs of (ListConfig, WalletEntry) accounts. Must be passed as a flattened array. */
+  addresses: Array<Address>;
+};
+
 export type CanFreezePermissionlessInput<
   TAccountAuthority extends string = string,
   TAccountTokenAccount extends string = string,
@@ -108,12 +120,13 @@ export type CanFreezePermissionlessInput<
   TAccountFlagAccount extends string = string,
   TAccountExtraMetas extends string = string,
 > = {
-  authority: TransactionSigner<TAccountAuthority>;
+  authority: Address<TAccountAuthority>;
   tokenAccount: Address<TAccountTokenAccount>;
   mint: Address<TAccountMint>;
   owner: Address<TAccountOwner>;
   flagAccount: Address<TAccountFlagAccount>;
   extraMetas: Address<TAccountExtraMetas>;
+  addresses: CanFreezePermissionlessInstructionExtraArgs['addresses'];
 };
 
 export function getCanFreezePermissionlessInstruction<
@@ -162,6 +175,15 @@ export function getCanFreezePermissionlessInstruction<
     ResolvedAccount
   >;
 
+  // Original args.
+  const args = { ...input };
+
+  // Remaining accounts.
+  const remainingAccounts: AccountMeta[] = args.addresses.map((address) => ({
+    address,
+    role: AccountRole.READONLY,
+  }));
+
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
     accounts: [
@@ -171,6 +193,7 @@ export function getCanFreezePermissionlessInstruction<
       getAccountMeta(accounts.owner),
       getAccountMeta(accounts.flagAccount),
       getAccountMeta(accounts.extraMetas),
+      ...remainingAccounts,
     ],
     data: getCanFreezePermissionlessInstructionDataEncoder().encode({}),
     programAddress,

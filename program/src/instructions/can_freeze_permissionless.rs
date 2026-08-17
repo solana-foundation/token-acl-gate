@@ -38,14 +38,6 @@ impl<'a> CanFreezePermissionless<'a> {
     pub const DISCRIMINATOR: u8 = 0xd6;
 
     pub fn process(&self) -> ProgramResult {
-        // SAFETY: token account is validated by the token-2022 program
-        // after the current call finishes execution, the token acl program
-        // calls into token-2022 to freeze the token account, which gets type checked
-        // by the token-2022 program
-        if !crate::state::has_immutable_owner_extension(self.token_account) {
-            return Err(ABLError::ImmutableOwnerExtensionMissing.into());
-        }
-
         // Remaining accounts should be pairs of list and ab_wallet
         // Freeze logic is the inverse of thaw:
         // - thaw requires every list to approve,
@@ -75,7 +67,7 @@ impl<'a> CanFreezePermissionless<'a> {
         }
 
         let list_data: &[u8] = &list.try_borrow_data()?;
-        let list_config = unsafe { load::<ListConfig>(list_data)? };
+        let list_config = load::<ListConfig>(list_data)?;
 
         // Freeze semantics are the inverse of thaw:
         // - Allow: freeze if wallet is NOT on the list
@@ -93,7 +85,7 @@ impl<'a> CanFreezePermissionless<'a> {
                     WalletEntry::Missing => FreezeDecision::Skip,
                 },
             ),
-            _ => Err(ABLError::InvalidListConfig.into())
+            _ => Err(ABLError::InvalidListConfig.into()),
         }
     }
 
@@ -108,7 +100,7 @@ impl<'a> CanFreezePermissionless<'a> {
         }
 
         let ab_wallet_data: &[u8] = &wallet_entry.try_borrow_data()?;
-        let res = unsafe { load::<WalletEntryState>(ab_wallet_data) };
+        let res = load::<WalletEntryState>(ab_wallet_data);
 
         match res {
             Ok(wallet) => {

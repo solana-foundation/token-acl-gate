@@ -1,9 +1,10 @@
+use bytemuck::{Pod, Zeroable};
 use codama::CodamaAccount;
 use pinocchio::pubkey::Pubkey;
 
-use super::{Discriminator, Transmutable};
+use super::{assert_pod_layout, Discriminator, Transmutable};
 
-#[derive(CodamaAccount)]
+#[derive(CodamaAccount, Clone, Copy, Pod, Zeroable)]
 #[repr(C)]
 #[codama(discriminator(field = "discriminator"))]
 #[codama(seed(type = string, value = "wallet_entry"))]
@@ -23,6 +24,8 @@ impl WalletEntry {
 impl Transmutable for WalletEntry {
     const LEN: usize = 1 + 32 + 32;
 }
+
+assert_pod_layout!(WalletEntry);
 
 impl Discriminator for WalletEntry {
     const DISCRIMINATOR: u8 = 0x02;

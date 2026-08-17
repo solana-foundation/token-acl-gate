@@ -99,6 +99,14 @@ impl<'a> SetupExtraMetas<'a> {
             return Err(ABLError::InvalidExtraMetasAccount.into());
         }
 
+        let (expected_mint_config_pda, _) = find_program_address(
+            &[b"MINT_CONFIG", self.mint.key()],
+            token_acl_interface::TOKEN_ACL_ID.as_array(),
+        );
+        if expected_mint_config_pda != *self.token_acl_mint_config.key() {
+            return Err(ABLError::InvalidTokenAclMintConfig)?;
+        }
+
         let mint_config_data = self.token_acl_mint_config.try_borrow_data()?;
         let mint_config = token_acl::state::load_mint_config(&mint_config_data)
             .map_err(|_| ABLError::InvalidTokenAclMintConfig)?;
@@ -124,7 +132,7 @@ impl<'a> SetupExtraMetas<'a> {
             if !account.is_owned_by(&crate::ID) {
                 return Err(ABLError::InvalidConfigAccount.into());
             }
-            let _ = unsafe { load::<ListConfig>(&account.try_borrow_data()?)? };
+            let _ = load::<ListConfig>(&account.try_borrow_data()?)?;
             lists[i] = Some(account.key());
             i += 1;
         }

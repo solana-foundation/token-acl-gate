@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install verifiable build deps
         uses: solana-developers/github-actions/setup-all@e2cd34eb09f996b48be7f6daeb8f455094dd6d53 # v0.2.10

@@ -9,13 +9,14 @@
 import {
   AccountRole,
   combineCodec,
+  fixDecoderSize,
+  fixEncoderSize,
+  getBytesDecoder,
+  getBytesEncoder,
   getStructDecoder,
   getStructEncoder,
-  getU8Decoder,
-  getU8Encoder,
   transformEncoder,
   type AccountMeta,
-  type AccountSignerMeta,
   type Address,
   type FixedSizeCodec,
   type FixedSizeDecoder,
@@ -24,17 +25,19 @@ import {
   type InstructionWithAccounts,
   type InstructionWithData,
   type ReadonlyAccount,
-  type ReadonlySignerAccount,
   type ReadonlyUint8Array,
-  type TransactionSigner,
 } from '@solana/kit';
 import { TOKEN_ACL_GATE_PROGRAM_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const CAN_THAW_PERMISSIONLESS_DISCRIMINATOR = 8;
+export const CAN_THAW_PERMISSIONLESS_DISCRIMINATOR = new Uint8Array([
+  8, 175, 169, 129, 137, 74, 61, 241,
+]);
 
 export function getCanThawPermissionlessDiscriminatorBytes() {
-  return getU8Encoder().encode(CAN_THAW_PERMISSIONLESS_DISCRIMINATOR);
+  return fixEncoderSize(getBytesEncoder(), 8).encode(
+    CAN_THAW_PERMISSIONLESS_DISCRIMINATOR
+  );
 }
 
 export type CanThawPermissionlessInstruction<
@@ -51,8 +54,7 @@ export type CanThawPermissionlessInstruction<
   InstructionWithAccounts<
     [
       TAccountAuthority extends string
-        ? ReadonlySignerAccount<TAccountAuthority> &
-            AccountSignerMeta<TAccountAuthority>
+        ? ReadonlyAccount<TAccountAuthority>
         : TAccountAuthority,
       TAccountTokenAccount extends string
         ? ReadonlyAccount<TAccountTokenAccount>
@@ -73,13 +75,15 @@ export type CanThawPermissionlessInstruction<
     ]
   >;
 
-export type CanThawPermissionlessInstructionData = { discriminator: number };
+export type CanThawPermissionlessInstructionData = {
+  discriminator: ReadonlyUint8Array;
+};
 
 export type CanThawPermissionlessInstructionDataArgs = {};
 
 export function getCanThawPermissionlessInstructionDataEncoder(): FixedSizeEncoder<CanThawPermissionlessInstructionDataArgs> {
   return transformEncoder(
-    getStructEncoder([['discriminator', getU8Encoder()]]),
+    getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
     (value) => ({
       ...value,
       discriminator: CAN_THAW_PERMISSIONLESS_DISCRIMINATOR,
@@ -88,7 +92,9 @@ export function getCanThawPermissionlessInstructionDataEncoder(): FixedSizeEncod
 }
 
 export function getCanThawPermissionlessInstructionDataDecoder(): FixedSizeDecoder<CanThawPermissionlessInstructionData> {
-  return getStructDecoder([['discriminator', getU8Decoder()]]);
+  return getStructDecoder([
+    ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
+  ]);
 }
 
 export function getCanThawPermissionlessInstructionDataCodec(): FixedSizeCodec<
@@ -114,7 +120,7 @@ export type CanThawPermissionlessInput<
   TAccountFlagAccount extends string = string,
   TAccountExtraMetas extends string = string,
 > = {
-  authority: TransactionSigner<TAccountAuthority>;
+  authority: Address<TAccountAuthority>;
   tokenAccount: Address<TAccountTokenAccount>;
   mint: Address<TAccountMint>;
   owner: Address<TAccountOwner>;

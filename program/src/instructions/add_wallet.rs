@@ -26,11 +26,14 @@ impl<'a> AddWallet<'a> {
 
     pub fn process(&self) -> ProgramResult {
         let list_config =
-            unsafe { load_mut::<ListConfig>(self.list_config.borrow_mut_data_unchecked())? };
+            load_mut::<ListConfig>(unsafe { self.list_config.borrow_mut_data_unchecked() })?;
 
         if !self.authority.is_signer() || list_config.authority.ne(self.authority.key()) {
             return Err(ABLError::InvalidAuthority.into());
         }
+
+        list_config.increment_wallets_count()?;
+        let _ = list_config;
 
         let lamports = Rent::get()?.minimum_balance(WalletEntry::LEN);
 
@@ -67,12 +70,10 @@ impl<'a> AddWallet<'a> {
         .invoke_signed(&signer)?;
 
         let mut data = self.wallet_entry.try_borrow_mut_data()?;
-        let wallet_entry = unsafe { load_mut_unchecked::<WalletEntry>(&mut data)? };
+        let wallet_entry = load_mut_unchecked::<WalletEntry>(&mut data)?;
         wallet_entry.discriminator = WalletEntry::DISCRIMINATOR;
         wallet_entry.wallet_address = *self.wallet.key();
         wallet_entry.list_config = *self.list_config.key();
-
-        list_config.increment_wallets_count()?;
 
         Ok(())
     }

@@ -5,6 +5,10 @@ use pinocchio::{
     pubkey::Pubkey, ProgramResult,
 };
 use pinocchio_pubkey::declare_id;
+use spl_discriminator::SplDiscriminate;
+use token_acl_interface::instruction::{
+    CanFreezePermissionlessInstruction, CanThawPermissionlessInstruction,
+};
 
 program_entrypoint!(process_instruction, 16);
 
@@ -27,27 +31,26 @@ fn process_instruction(
     accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
-    let [disc, remaining_data @ ..] = instruction_data else {
-        return Err(ABLError::InvalidInstruction.into());
-    };
-
-    match *disc {
-        CanThawPermissionless::DISCRIMINATOR => {
+    match instruction_data {
+        CanThawPermissionlessInstruction::SPL_DISCRIMINATOR_SLICE => {
             CanThawPermissionless::try_from(accounts)?.process()
         }
-        CanFreezePermissionless::DISCRIMINATOR => {
+        CanFreezePermissionlessInstruction::SPL_DISCRIMINATOR_SLICE => {
             CanFreezePermissionless::try_from(accounts)?.process()
         }
-        CreateList::DISCRIMINATOR => CreateList::try_from(accounts)?.process(remaining_data),
-        DeleteList::DISCRIMINATOR => DeleteList::try_from(accounts)?.process(),
-        AddWallet::DISCRIMINATOR => AddWallet::try_from(accounts)?.process(),
-        RemoveWallet::DISCRIMINATOR => RemoveWallet::try_from(accounts)?.process(),
-        SetupExtraMetas::DISCRIMINATOR => {
-            SetupExtraMetas::try_from(accounts)?.process(ExtraMetasVariant::Thaw)
-        }
-        SetupFreezeExtraMetas::DISCRIMINATOR => {
-            SetupExtraMetas::try_from(accounts)?.process(ExtraMetasVariant::Freeze)
-        }
-        _ => Err(ProgramError::InvalidInstructionData),
+        [disc, remaining_data @ ..] => match *disc {
+            CreateList::DISCRIMINATOR => CreateList::try_from(accounts)?.process(remaining_data),
+            DeleteList::DISCRIMINATOR => DeleteList::try_from(accounts)?.process(),
+            AddWallet::DISCRIMINATOR => AddWallet::try_from(accounts)?.process(),
+            RemoveWallet::DISCRIMINATOR => RemoveWallet::try_from(accounts)?.process(),
+            SetupExtraMetas::DISCRIMINATOR => {
+                SetupExtraMetas::try_from(accounts)?.process(ExtraMetasVariant::Thaw)
+            }
+            SetupFreezeExtraMetas::DISCRIMINATOR => {
+                SetupExtraMetas::try_from(accounts)?.process(ExtraMetasVariant::Freeze)
+            }
+            _ => Err(ProgramError::InvalidInstructionData),
+        },
+        _ => Err(ABLError::InvalidInstruction.into()),
     }
 }

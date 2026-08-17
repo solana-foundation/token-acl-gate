@@ -1,20 +1,21 @@
 # Allow Block List (ABL) - sRFC 37 Implementation
 
-A Solana program implementation of sRFC 37 that provides an Allow/Block List (ABL) system for token access control. This program implements the `can_thaw_permissionless` instruction according to the sRFC037 specification.
+A Solana program implementation of sRFC 37 that provides an Allow/Block List (ABL) system for token access control. This program implements the `can_thaw_permissionless` and `can_freeze_permissionless` instructions according to the sRFC037 specification.
 
 ## Overview
 
-This ABL program is written in Pinocchio and generates clients using Codama. It provides a flexible token access control system that allows token issuers to manage which wallets can have their token accounts thawed through different operational modes.
+This ABL program is written in Pinocchio and generates clients using Codama. It provides a flexible token access control system that allows token issuers to manage which wallets can have their token accounts thawed or frozen through different operational modes.
 
 ## Repo contents
 
 - **Program**: Core Solana program written in Pinocchio
+- **IDL**: Committed Codama IDL (`idl/`), kept in sync with the program source by CI staleness checks
 - **SDK**: Generated TypeScript and Rust clients using Codama
 - **CLI**: Command-line interface for program interaction
 
 ## Working Modes
 
-The program supports three distinct operational modes:
+The program supports two distinct operational modes:
 
 ### 1. Block Mode
 - **Purpose**: Blocks wallets in the list from having token accounts thawed
@@ -26,13 +27,6 @@ The program supports three distinct operational modes:
 - **Behavior**: Wallets must be explicitly added to the list to access tokens
 - **Use Case**: Whitelist approach for restricted token access
 
-### 3. Allow All EOAs Mode
-- **Purpose**: All EOAs can be thawed by default, plus any manually added wallets
-- **Behavior**: 
-  - All EOAs are allowed by default
-  - PDAs (Program Derived Addresses) must be explicitly added to the list
-- **Use Case**: Open access for EOAs with selective PDA (Smart Contracts) control
-
 ## Core Functionality
 
 ### List Management
@@ -42,40 +36,77 @@ The program supports three distinct operational modes:
 - **Remove Wallet**: Remove a wallet address from a specific list
 
 ### Token Integration
-- **Setup Extra Metas**: Configure which lists are used for a given token mint
+- **Setup Extra Metas**: Configure which lists are used for a given token mint (separately for thaw and freeze)
 - **Multiple List Support**: Token issuers can subscribe to multiple allow or block lists
-- **Conjunctive Logic**: Wallets must be allowed by ALL configured lists to be thawed
+- **Conjunctive Thaw Logic**: Wallets must be allowed by ALL configured lists to be thawed
+- **Disjunctive Freeze Logic**: A wallet's token account can be frozen as soon as ANY configured list approves the freeze
 
 ## Program Instructions
 
 | Instruction | Discriminator | Description |
 |-------------|---------------|-------------|
-| `can_thaw_permissionless` | `0x8` | Gate program instruction called by Token ACL |
+| `can_thaw_permissionless` | `08afa981894a3df1` (8 bytes) | Gate instruction called by Token ACL during permissionless thaw |
+| `can_freeze_permissionless` | `d68d6d4bf8012d1d` (8 bytes) | Gate instruction called by Token ACL during permissionless freeze |
 | `create_list` | `0x1` | Create a new list configuration |
-| `delete_list` | `0x2` | Delete an empty list |
-| `add_wallet` | `0x3` | Add wallet to a list |
-| `remove_wallet` | `0x4` | Remove wallet from a list |
-| `setup_extra_metas` | `0x5` | Configure lists for a token mint |
+| `add_wallet` | `0x2` | Add wallet to a list |
+| `remove_wallet` | `0x3` | Remove wallet from a list |
+| `setup_extra_metas` | `0x4` | Configure thaw lists for a token mint |
+| `delete_list` | `0x5` | Delete an empty list |
+| `setup_freeze_extra_metas` | `0x6` | Configure freeze lists for a token mint |
+
+The two gate instructions use the complete 8-byte discriminators defined by the
+token-acl interface.
 
 ## Integration with Token ACL
 
-This program serves as a gate program for the [Token ACL system](https://github.com/solana-foundation/token-acl). The Token ACL program calls `can_thaw_permissionless` to determine if a wallet should be allowed to thaw their token account.
+This program serves as a gate program for the [Token ACL system](https://github.com/solana-foundation/token-acl). The Token ACL program calls `can_thaw_permissionless` / `can_freeze_permissionless` to determine if a wallet's token account should be allowed to be thawed or frozen.
 
 ### Setup Process
 1. Create one or more lists with desired modes
 2. Add/remove wallets as needed
-3. Use `setup_extra_metas` to configure which lists apply to a token mint
+3. Use `setup_extra_metas` (and `setup_freeze_extra_metas`) to configure which lists apply to a token mint
 4. Create a Token ACL mint config account and define this program as the gate program
-5. Enable the permissionless thaw operation
-4. The Token ACL program will call this gate program during thaw operations
+5. Enable the permissionless thaw and/or freeze operations
+6. The Token ACL program will call this gate program during thaw/freeze operations
+
+### Allow Lists Require `DefaultAccountState::Frozen`
+
+An allow list on the thaw policy only restricts token accounts that are
+**created frozen**. Token-2022 copies the mint's `DefaultAccountState` into
+every new token account, and an account created `Initialized` is already
+usable — Token ACL's thaw path returns before calling the gate, and ordinary
+transfers never invoke Token ACL or this program.
+
+- If the mint's `DefaultAccountState` is not `Frozen`, an installed allow
+  list **does not restrict newly created accounts**. Anyone (including an
+  allowlisted holder) can create and fund an unlisted wallet's account, which
+  can then transfer onward without any gate decision. The setup path
+  deliberately allows this state so existing mints can migrate to ACL; the
+  CLI prints a warning when it detects it.
+- Set `DefaultAccountState` to `Frozen` **before** relying on an allow list
+  to restrict new holders.
+
+### Adopting ACL on an Existing Mint Is a Migration
+
+Updating `DefaultAccountState` to `Frozen` is **not retroactive**: it only
+affects token accounts initialized after the update. Accounts that already
+exist as `Initialized` never need a gated thaw and keep transferring normally
+after ACL adoption.
+
+Before relying on an allow-list policy for pre-existing balances, issuers
+must enumerate the mint's token accounts and freeze (or otherwise migrate)
+every `Initialized` account whose owner is not allowed. Until that sweep is
+complete, the allow list only protects accounts created after
+`DefaultAccountState::Frozen` was set.
 
 ## Development
 
 ### Prerequisites
-- Rust 1.88+
-- Solana CLI 2.2.0+
+- Rust 1.89 (pinned in [rust-toolchain.toml](rust-toolchain.toml))
+- Solana CLI (Agave) 3.x — CI pins 3.1.11, and the committed test fixture must be built with that same version to pass the CI staleness check; the dependency tree requires edition2024 support, so `cargo build-sbf` needs platform-tools v1.52+ (rustc 1.89)
 - Node.js 20.18.0+
-- pnpm 9.1.0+
+- pnpm 10+
+- codama-rs CLI (`cargo install codama-cli --version 0.8.0 --locked`) — used by `pnpm run generate-idl`; the version must match the `codama` crate version in [Cargo.toml](Cargo.toml)
 
 ### Building
 ```bash
@@ -92,11 +123,23 @@ cargo build --manifest-path=cli/Cargo.toml
 # Install CLI
 cargo install --path cli
 
+# Generate fixed IDL
+# This extracts the initial codama IDL from the program source using the
+# codama-rs CLI (see Prerequisites), adds additional metadata via visitors
+# and places the result in idl/. Fails with a non-zero exit code if any
+# step cannot produce a valid IDL.
+pnpm run generate-idl
+
 # Generate SDKs
 pnpm run generate-sdks
 
+# Copy the built program into the test fixtures
+# (the Rust SDK tests run litesvm against this prebuilt binary, so re-run
+# this after every program change or the tests exercise a stale program)
+pnpm run copy:test:fixtures
+
 # Run tests
-cargo test-sbf --manifest-path=sdk/rust/Cargo.toml
+cargo test --manifest-path=sdk/rust/Cargo.toml
 ```
 
 ### Program ID
@@ -148,13 +191,18 @@ cargo run --bin token-acl-gate-cli -- add-wallet <LIST_ADDRESS> <WALLET_ADDRESS>
 cargo run --bin token-acl-gate-cli -- remove-wallet <LIST_ADDRESS> <WALLET_ADDRESS>
 ```
 
-**Apply lists to a mint:**
+**Apply lists to a mint (permissionless thaw):**
 ```bash
 # Apply a single list to a mint
 cargo run --bin token-acl-gate-cli -- apply-lists-to-mint <MINT_ADDRESS> <LIST_ADDRESS>
 
 # Apply multiple lists to a mint
 cargo run --bin token-acl-gate-cli -- apply-lists-to-mint <MINT_ADDRESS> <LIST_ADDRESS_1> <LIST_ADDRESS_2> <LIST_ADDRESS_3>
+```
+
+**Apply lists to a mint (permissionless freeze):**
+```bash
+cargo run --bin token-acl-gate-cli -- apply-lists-to-mint-freeze <MINT_ADDRESS> <LIST_ADDRESS_1> <LIST_ADDRESS_2>
 ```
 
 **Example workflow:**
@@ -176,8 +224,8 @@ cargo run --bin token-acl-gate-cli -- apply-lists-to-mint <MINT_ADDRESS> <LIST_A
 
 - [Token ACL Repository](https://github.com/solana-foundation/token-acl)
 - [sRFC 37 Specification](https://github.com/solana-foundation/SRFCs/discussions/2)
-- [Pinocchio Framework](https://github.com/solana-labs/pinocchio)
-- [Codama Code Generation](https://github.com/codama-ai/codama)
+- [Pinocchio Framework](https://github.com/anza-xyz/pinocchio)
+- [Codama Code Generation](https://github.com/codama-idl/codama)
 
 ## License
 

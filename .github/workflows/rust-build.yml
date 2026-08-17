@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
@@ -36,3 +36,29 @@ jobs:
 
       - name: Run integration tests
         run: pnpm run test
+
+      - name: Cache codama-cli
+        id: cache-codama
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cargo/bin/codama-rs
+          key: codama-cli-0.8.0-${{ runner.os }}
+
+      - name: Install codama-cli
+        if: steps.cache-codama.outputs.cache-hit != 'true'
+        run: cargo install codama-cli --version 0.8.0 --locked
+
+      - name: Check committed IDL, SDKs and test fixture match the program source
+        run: |
+          pnpm run generate-idl
+          pnpm run generate-sdks
+          # the earlier copy:test:fixtures step overwrote the committed fixture
+          # with the freshly built program, so a dirty fixture path here means
+          # the committed binary was not built from the current source (with
+          # the CI-pinned Agave version)
+          if [ -n "$(git status --porcelain -- idl/ sdk/ts/src/generated sdk/rust/src/generated sdk/rust/tests/fixtures/token_acl_gate_program.so)" ]; then
+            echo "::error::Committed IDL/SDKs/test fixture are out of date. Run 'pnpm run generate-idl && pnpm run generate-sdks && pnpm run copy:test:fixtures' and commit the result."
+            git status --porcelain -- idl/ sdk/ts/src/generated sdk/rust/src/generated sdk/rust/tests/fixtures/token_acl_gate_program.so
+            git diff -- idl/ sdk/ts/src/generated sdk/rust/src/generated
+            exit 1
+          fi

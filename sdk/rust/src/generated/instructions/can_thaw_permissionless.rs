@@ -8,7 +8,7 @@
 use borsh::BorshDeserialize;
 use borsh::BorshSerialize;
 
-pub const CAN_THAW_PERMISSIONLESS_DISCRIMINATOR: u8 = 8;
+pub const CAN_THAW_PERMISSIONLESS_DISCRIMINATOR: [u8; 8] = [8, 175, 169, 129, 137, 74, 61, 241];
 
 /// Accounts.
 #[derive(Debug)]
@@ -39,7 +39,7 @@ impl CanThawPermissionless {
         let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.authority,
-            true,
+            false,
         ));
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             self.token_account,
@@ -75,12 +75,14 @@ impl CanThawPermissionless {
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CanThawPermissionlessInstructionData {
-    discriminator: u8,
+    discriminator: [u8; 8],
 }
 
 impl CanThawPermissionlessInstructionData {
     pub fn new() -> Self {
-        Self { discriminator: 8 }
+        Self {
+            discriminator: [8, 175, 169, 129, 137, 74, 61, 241],
+        }
     }
 
     pub(crate) fn try_to_vec(&self) -> Result<Vec<u8>, std::io::Error> {
@@ -98,7 +100,7 @@ impl Default for CanThawPermissionlessInstructionData {
 ///
 /// ### Accounts:
 ///
-///   0. `[signer]` authority
+///   0. `[]` authority
 ///   1. `[]` token_account
 ///   2. `[]` mint
 ///   3. `[]` owner
@@ -253,7 +255,7 @@ impl<'a, 'b> CanThawPermissionlessCpi<'a, 'b> {
         let mut accounts = Vec::with_capacity(6 + remaining_accounts.len());
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.authority.key,
-            true,
+            false,
         ));
         accounts.push(solana_instruction::AccountMeta::new_readonly(
             *self.token_account.key,
@@ -315,7 +317,7 @@ impl<'a, 'b> CanThawPermissionlessCpi<'a, 'b> {
 ///
 /// ### Accounts:
 ///
-///   0. `[signer]` authority
+///   0. `[]` authority
 ///   1. `[]` token_account
 ///   2. `[]` mint
 ///   3. `[]` owner

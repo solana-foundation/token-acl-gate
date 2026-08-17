@@ -15,6 +15,7 @@ solana-logger = { workspace = true }
 solana-remote-wallet = { workspace = true }
 tokio = { version = "1", features = ["full"] }
 token-acl-gate-client = { workspace = true }
+spl-token-2022-interface = { workspace = true }
 token-acl-client = { workspace = true }
 token-acl-interface = { workspace = true }
 solana-pubkey = { workspace = true, features = ["serde"] }

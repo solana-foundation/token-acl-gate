@@ -7,6 +7,7 @@ use solana_transaction::{InstructionError, Transaction, TransactionError};
 
 use token_acl_gate_client::{
     accounts::{ListConfig, WalletEntry},
+    errors::TokenAclGateProgramError,
     types::Mode,
 };
 
@@ -80,7 +81,10 @@ async fn fails_to_creates_list_with_non_pda_list() {
     let err = res.err().unwrap();
     assert_eq!(
         err.err,
-        TransactionError::InstructionError(0, InstructionError::Custom(16))
+        TransactionError::InstructionError(
+            0,
+            InstructionError::Custom(TokenAclGateProgramError::InvalidListConfig as u32)
+        )
     );
 }
 
@@ -161,7 +165,10 @@ async fn fails_to_delete_list_with_invalid_authority() {
     let err = res.err().unwrap();
     assert_eq!(
         err.err,
-        TransactionError::InstructionError(0, InstructionError::Custom(1))
+        TransactionError::InstructionError(
+            0,
+            InstructionError::Custom(TokenAclGateProgramError::InvalidAuthority as u32)
+        )
     );
 }
 
@@ -459,7 +466,10 @@ async fn fails_to_setup_list_extra_metas_with_invalid_gating_program() {
     let err = res.err().unwrap();
     assert_eq!(
         err.err,
-        TransactionError::InstructionError(1, InstructionError::Custom(6))
+        TransactionError::InstructionError(
+            1,
+            InstructionError::Custom(TokenAclGateProgramError::InvalidGatingProgram as u32)
+        )
     );
 }
 
@@ -682,7 +692,10 @@ async fn fails_to_setup_freeze_list_extra_metas_with_invalid_gating_program() {
     let err = res.err().unwrap();
     assert_eq!(
         err.err,
-        TransactionError::InstructionError(1, InstructionError::Custom(6))
+        TransactionError::InstructionError(
+            1,
+            InstructionError::Custom(TokenAclGateProgramError::InvalidGatingProgram as u32)
+        )
     );
 }
 
@@ -712,10 +725,12 @@ async fn fails_to_removes_wallet_from_invalid_list() {
     assert!(res.is_err());
 
     println!("res: {:?}", res);
-    // err 14
     let err = res.err().unwrap();
     assert_eq!(
         err.err,
-        TransactionError::InstructionError(0, InstructionError::Custom(15))
+        TransactionError::InstructionError(
+            0,
+            InstructionError::Custom(TokenAclGateProgramError::InvalidWalletEntry as u32)
+        )
     );
 }

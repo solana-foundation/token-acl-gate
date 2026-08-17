@@ -12,9 +12,9 @@ impl<'a> RemoveWallet<'a> {
     pub const DISCRIMINATOR: u8 = 0x03;
 
     pub fn process(&self) -> ProgramResult {
-        let list_config = unsafe {
-            load_mut_unchecked::<ListConfig>(self.list_config.borrow_mut_data_unchecked())?
-        };
+        let list_config = load_mut_unchecked::<ListConfig>(unsafe {
+            self.list_config.borrow_mut_data_unchecked()
+        })?;
 
         if !self.authority.is_signer() || list_config.authority.ne(self.authority.key()) {
             return Err(ABLError::InvalidAuthority.into());
@@ -55,7 +55,7 @@ impl<'a> TryFrom<&'a [AccountInfo]> for RemoveWallet<'a> {
             return Err(ABLError::InvalidWalletEntry);
         }
 
-        let we = unsafe { load::<WalletEntry>(wallet_entry.borrow_data_unchecked())? };
+        let we = load::<WalletEntry>(unsafe { wallet_entry.borrow_data_unchecked() })?;
         if !we.list_config.eq(list_config.key()) {
             return Err(ABLError::InvalidWalletEntry);
         }

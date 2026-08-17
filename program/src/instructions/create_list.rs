@@ -105,7 +105,7 @@ impl<'a> CreateList<'a> {
         .invoke_signed(&signer)?;
 
         let mut data = self.list_config.try_borrow_mut_data()?;
-        let list = unsafe { load_mut_unchecked::<ListConfig>(&mut data)? };
+        let list = load_mut_unchecked::<ListConfig>(&mut data)?;
         list.discriminator = ListConfig::DISCRIMINATOR;
         list.authority = *self.authority.key();
         list.seed = *seed;

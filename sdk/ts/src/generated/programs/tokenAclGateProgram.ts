@@ -8,6 +8,8 @@
 
 import {
   containsBytes,
+  fixEncoderSize,
+  getBytesEncoder,
   getU8Encoder,
   type Address,
   type ReadonlyUint8Array,
@@ -79,10 +81,26 @@ export function identifyTokenAclGateProgramInstruction(
   if (containsBytes(data, getU8Encoder().encode(6), 0)) {
     return TokenAclGateProgramInstruction.SetupFreezeExtraMetas;
   }
-  if (containsBytes(data, getU8Encoder().encode(8), 0)) {
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([8, 175, 169, 129, 137, 74, 61, 241])
+      ),
+      0
+    )
+  ) {
     return TokenAclGateProgramInstruction.CanThawPermissionless;
   }
-  if (containsBytes(data, getU8Encoder().encode(214), 0)) {
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([214, 141, 109, 75, 248, 1, 45, 29])
+      ),
+      0
+    )
+  ) {
     return TokenAclGateProgramInstruction.CanFreezePermissionless;
   }
   throw new Error(
