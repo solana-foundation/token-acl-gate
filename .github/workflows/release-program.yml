@@ -68,7 +68,7 @@ jobs:
         with:
           auth-method: oidc
           doppler-identity-id: ${{ vars.DOPPLER_SERVICE_IDENTITY_ID }}
-          doppler-project: token-acl-gate
+          doppler-project: token-acl
           doppler-config: ${{ inputs.network == 'mainnet' && 'prd_github' || 'stg_github' }}
           inject-env-vars: true
 
