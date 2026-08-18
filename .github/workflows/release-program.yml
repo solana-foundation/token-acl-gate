@@ -69,14 +69,14 @@ jobs:
           auth-method: oidc
           doppler-identity-id: ${{ vars.DOPPLER_SERVICE_IDENTITY_ID }}
           doppler-project: token-acl
-          doppler-config: ${{ inputs.network == 'mainnet' && 'prd_github' || 'stg_github' }}
+          doppler-config: ${{ inputs.network == 'mainnet' && 'prd' || 'stg' }}
           inject-env-vars: true
 
       - if: inputs.network == 'mainnet'
         name: Validate Squads config
         run: |
-          : "${SQUADS_VAULT:?Set SQUADS_VAULT in Doppler prd_github}"
-          : "${SQUADS_MULTISIG:?Set SQUADS_MULTISIG in Doppler prd_github}"
+          : "${SQUADS_VAULT:?Set SQUADS_VAULT in Doppler prd}"
+          : "${SQUADS_MULTISIG:?Set SQUADS_MULTISIG in Doppler prd}"
 
       - name: Materialize deployer keypair
         run: |
