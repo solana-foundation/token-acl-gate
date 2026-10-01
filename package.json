@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "engines": {
-    "node": ">=20.18.0"
+    "node": ">=20.19.0"
   },
   "scripts": {
     "build": "",
@@ -24,13 +24,18 @@
     "@types/mocha": "^10.0.10",
     "codama": "^1.5.1",
     "litesvm": "^0.2.0",
-    "mocha": "^11.1.0",
+    "mocha": "^12.0.2",
     "solana-bankrun": "^0.4.0",
     "tsx": "^4.19.3",
-    "zx": "^8.3.2"
+    "zx": "^8.8.5"
   },
   "devDependencies": {
     "@types/node": "^22.15.29"
   },
-  "packageManager": "pnpm@10.20.0"
+  "packageManager": "pnpm@10.20.0",
+  "pnpm": {
+    "overrides": {
+      "jayson": "^5.0.0"
+    }
+  }
 }
