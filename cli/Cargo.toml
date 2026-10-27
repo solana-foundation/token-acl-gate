@@ -7,7 +7,7 @@ license = { workspace = true }
 edition = { workspace = true }
 
 [dependencies]
-clap = { version = "3", features = ["cargo"] }
+clap = { version = "3", default-features = false, features = ["std", "cargo", "suggestions"] }
 solana-clap-v3-utils = { workspace = true }
 solana-cli-config = { workspace = true }
 solana-client = { workspace = true }
